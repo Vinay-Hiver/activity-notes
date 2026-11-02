@@ -77,12 +77,7 @@ export function ConversationFieldsProvider({ children }) {
       }),
       /** The activity rows left by changes made in the right panel, oldest first. */
       activityOf: (id) => activity[String(id)] ?? [],
-      /** Adds a row; `merge(lastRow)` may instead return a replacement for the last row (or null to add). */
-      addActivity: (id, row, merge) => setActivity((prev) => {
-        const list = prev[String(id)] ?? [];
-        const merged = merge && list.length ? merge(list[list.length - 1]) : null;
-        return { ...prev, [String(id)]: merged ? [...list.slice(0, -1), merged] : [...list, row] };
-      }),
+      addActivity: (id, row) => setActivity((prev) => ({ ...prev, [String(id)]: [...(prev[String(id)] ?? []), row] })),
     };
   }, [assignees, statuses, tags, customFields, activity]);
 

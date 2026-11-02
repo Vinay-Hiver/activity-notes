@@ -35,10 +35,14 @@
 .en-activity { display: flex; flex-direction: column; gap: 6px; padding: 2px 12px 2px 13px; }
 .en-activity__row { position: relative; display: flex; align-items: center; gap: 8px; padding: 2px 2px 2px 0; color: var(--slateTextBody); }
 .en-activity__row svg { flex: none; }
-.en-activity__row p { flex: 1; min-width: 0; margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; line-height: 20px; color: var(--slateTextBody); }
+.en-activity__row p, .en-activity__row .en-activity__text { flex: 1; min-width: 0; margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; line-height: 20px; color: var(--slateTextBody); }
 /* The time shows on hover only */
 .en-activity__time { flex: none; font-size: 12px; line-height: 18px; color: var(--slateTextSubtle); white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 120ms ease; }
 .en-activity__row:hover .en-activity__time { opacity: 1; }
+/* The folded line of a group: a button that opens the full list */
+.en-activity__summary { width: 100%; border: 0; background: none; text-align: left; cursor: pointer; font-family: inherit; }
+.en-activity__summary:hover .en-activity__text { color: var(--slateTextTitle); }
+.en-activity__rest { color: var(--primaryBorderDefault); }
 .en-activity__more { align-self: flex-start; padding: 0; border: 0; background: none; cursor: pointer; font-family: inherit; font-size: 13px; line-height: 18px; color: var(--primaryBorderDefault); }
 
 /* ---------- Note card ---------- */

@@ -44,17 +44,18 @@ const activityFor = (conversation) => {
   const owner = start.assignee !== 'none' ? { id: start.assignee, name: assigneeName(start.assignee) } : null;
   // Who tagged it and set its status: its owner, or (while unassigned) the next person in the list.
   const actor = owner ?? { id: 'abhay', name: assigneeName('abhay') };
-  const tagText = start.tags.map((v) => TAGS.find((t) => t.value === v)?.label ?? v).join(', ');
   const statusText = statusOptions.find((o) => o.value === start.status)?.label;
+  const key = `seed-${conversation.id}`;
+  // Each row is one event with a `kind`, so a group of them can be summed up ("2 tags added").
   return {
     first: owner
-      ? [{ icon: 'user', verb: 'assigned to', object: owner, suffix: 'through auto assignment', time: first }]
-      : [{ icon: 'mailbox', text: `New conversation in ${conversation.inbox}`, time: first }],
+      ? [{ id: `${key}-assign`, kind: 'assignee', icon: 'user', verb: 'assigned to', object: owner, suffix: 'through auto assignment', time: first }]
+      : [{ id: `${key}-new`, kind: 'created', icon: 'mailbox', text: `New conversation in ${conversation.inbox}`, time: first }],
     last: [
-      { icon: 'tag', actor, verb: `applied ${tagText} tag(s)`, time: last },
-      { icon: 'flag', actor, verb: `changed status to ${statusText}`, time: last },
-      { icon: <Zap size={14} />, text: 'Default SLA Policy SLA: First response is Overdue.', time: last },
-      { icon: 'aisummarizer', text: 'Hiver AI updated Topic', time: last },
+      ...start.tags.map((v) => ({ id: `${key}-tag-${v}`, kind: 'tag-add', icon: 'tag', actor, verb: `applied ${TAGS.find((t) => t.value === v)?.label ?? v} tag`, time: last })),
+      { id: `${key}-status`, kind: 'status', icon: 'flag', actor, verb: `changed status to ${statusText}`, time: last },
+      { id: `${key}-sla`, kind: 'sla', icon: <Zap size={14} />, text: 'Default SLA Policy SLA: First response is Overdue.', time: last },
+      { id: `${key}-ai`, kind: 'ai', icon: 'aisummarizer', text: 'Hiver AI updated Topic', time: last },
     ],
   };
 };
@@ -205,17 +206,28 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
   const activity = activityFor(conversation);
   const lastIndex = conversation.messages.length - 1;
   const seedIds = new Set(seedNotes(conversation).map((n) => n.id));
-  // After the messages: new notes and right-panel activity in the order they happened,
-  // with activity rows that follow each other shown together in one block.
-  const timeline = [
+  // New notes and right-panel activity, in the order they happened (all after the last message).
+  const later = [
     ...thread.notes.filter((n) => !seedIds.has(n.id)).map((n) => ({ kind: 'note', at: n.at ?? 0, note: n })),
     ...activityOf(conversation.id).map((row) => ({ kind: 'activity', at: row.at, row })),
-  ].sort((a, b) => a.at - b.at).reduce((items, item) => {
-    const prev = items[items.length - 1];
-    if (item.kind === 'activity' && prev?.kind === 'activity') prev.rows.push(item.row);
-    else items.push(item.kind === 'activity' ? { kind: 'activity', key: item.row.id, rows: [item.row] } : item);
-    return items;
-  }, []);
+  ].sort((a, b) => a.at - b.at);
+  const asActivity = (rows) => rows.map((row) => ({ kind: 'activity', row }));
+
+  /**
+   * What follows message `index`, grouped as Front does: every activity event between two messages or
+   * notes goes into one group, however far apart in time. A message or a note always ends the group.
+   */
+  const itemsAfter = (index) => {
+    const items = [];
+    if (index === 0) items.push(...asActivity(activity.first), ...thread.notes.filter((n) => seedIds.has(n.id)).map((note) => ({ kind: 'note', note })));
+    if (index === lastIndex) items.push(...asActivity(activity.last), ...later);
+    return items.reduce((out, item) => {
+      const prev = out[out.length - 1];
+      if (item.kind === 'activity' && prev?.kind === 'activity') prev.rows.push(item.row);
+      else out.push(item.kind === 'activity' ? { kind: 'activity', key: item.row.id, rows: [item.row] } : item);
+      return out;
+    }, []);
+  };
   const pinned = thread.pin ? findNote(thread.pin.id) : null;
 
   return (
@@ -331,15 +343,12 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
                   </div>
                 )}
 
-                {index === 0 && <ActivityGroup key={`first-${conversation.id}`} rows={activity.first} />}
-                {index === 0 && thread.notes.filter((n) => seedIds.has(n.id)).map((n) => renderNote(n))}
-                {index === lastIndex && <ActivityGroup key={`last-${conversation.id}`} rows={activity.last} />}
+                {itemsAfter(index).map((item) => (item.kind === 'note'
+                  ? renderNote(item.note)
+                  : <ActivityGroup key={item.key} rows={item.rows} />))}
               </React.Fragment>
             );
           })}
-          {timeline.map((item) => (item.kind === 'note'
-            ? renderNote(item.note)
-            : <ActivityGroup key={item.key} rows={item.rows} latest />))}
         </div>
       </div>
 

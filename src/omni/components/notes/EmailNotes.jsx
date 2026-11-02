@@ -93,28 +93,70 @@ const IconBtn = ({ className = '', ...props }) => <button type="button" classNam
 
 /* ---------- Activity ---------- */
 
+// How a group sums up each kind of event, for `n` events of that kind.
+const SUMMARY_BY_KIND = {
+  'tag-add': (n) => (n === 1 ? '1 tag added' : `${n} tags added`),
+  'tag-remove': (n) => (n === 1 ? '1 tag removed' : `${n} tags removed`),
+  status: (n) => (n === 1 ? 'Status changed' : `Status changed ${n} times`),
+  assignee: (n) => (n === 1 ? 'Assignee changed' : `Assignee changed ${n} times`),
+  field: (n) => (n === 1 ? '1 custom field updated' : `${n} custom fields updated`),
+  created: () => 'Conversation created',
+  sla: (n) => (n === 1 ? 'SLA overdue' : `${n} SLA alerts`),
+  ai: (n) => (n === 1 ? 'Topic updated by Hiver AI' : `${n} Hiver AI updates`),
+};
+
 /**
- * A group of activity rows (each icon is a HOT icon name or an element). More than one collapses to
- * one row and "+N more": the first row, or with `latest` the newest (used for changes just made).
+ * The folded line for a group, as in Front: the first two kinds of event with their counts, then
+ * "+ N more" for the events not counted there. "2 tags added, Status changed + 2 more".
  */
-export function ActivityGroup({ rows, latest }) {
+function summarize(rows) {
+  const counts = [];
+  rows.forEach((row) => {
+    const entry = counts.find((c) => c.kind === row.kind);
+    if (entry) entry.n += 1;
+    else counts.push({ kind: row.kind, n: 1 });
+  });
+  const named = counts.slice(0, 2);
+  const rest = counts.slice(2).reduce((sum, c) => sum + c.n, 0);
+  const lead = named.map((c, i) => {
+    const text = (SUMMARY_BY_KIND[c.kind] ?? ((n) => `${n} updates`))(c.n);
+    return i === 0 ? text : text.charAt(0).toLowerCase() + text.slice(1);
+  }).join(', ');
+  return { lead, rest };
+}
+
+/**
+ * The activity between two messages or notes (each icon is a HOT icon name or an element).
+ * One event shows as its own row. More fold into a summary line; opening it lists every event, with "See less".
+ */
+export function ActivityGroup({ rows }) {
   const { user } = useCurrentUser();
   const [open, setOpen] = React.useState(false);
-  const shown = open ? rows : latest ? rows.slice(-1) : rows.slice(0, 1);
+  const row = (r) => (
+    <div key={r.id} className="en-activity__row">
+      {typeof r.icon === 'string' ? <Icon name={r.icon} size={14} /> : r.icon}
+      <p>{activityText(r, user.id)}</p>
+      <span className="en-activity__time">{r.time}</span>
+    </div>
+  );
+  if (rows.length === 1) return <div className="en-activity">{row(rows[0])}</div>;
+  if (open) {
+    return (
+      <div className="en-activity">
+        {rows.map(row)}
+        <button type="button" className="en-activity__more" onClick={() => setOpen(false)}>See less</button>
+      </div>
+    );
+  }
+  const { lead, rest } = summarize(rows);
   return (
     <div className="en-activity">
-      {shown.map((row, i) => (
-        <div key={i} className="en-activity__row">
-          {typeof row.icon === 'string' ? <Icon name={row.icon} size={14} /> : row.icon}
-          <p>{activityText(row, user.id)}</p>
-          <span className="en-activity__time">{row.time}</span>
-        </div>
-      ))}
-      {rows.length > 1 && (
-        <button type="button" className="en-activity__more" onClick={() => setOpen((o) => !o)}>
-          {open ? 'show less' : `+${rows.length - 1} more`}
-        </button>
-      )}
+      <button type="button" className="en-activity__row en-activity__summary" aria-expanded={false} onClick={() => setOpen(true)}>
+        <Icon name="layering" size={14} />
+        {/* A button can't hold a <p>, so the summary text is a span styled the same. */}
+        <span className="en-activity__text">{lead}{rest > 0 && <span className="en-activity__rest"> + {rest} more</span>}</span>
+        <span className="en-activity__time">{rows[rows.length - 1].time}</span>
+      </button>
     </div>
   );
 }
