@@ -23,7 +23,7 @@ export function useNotesThread(convoId, { onReply, onEdit, scrollRef }) {
   const update = (fn) => setThreads((all) => ({ ...all, [key]: fn(all[key] || { notes: [], pin: null }) }));
   const find = (id) => thread.notes.find((n) => n.id === id);
 
-  const add = ({ body, replyTo }) => {
+  const add = ({ body, attachments, replyTo }) => {
     const note = {
       id: `note-${Date.now()}`,
       authorId: user.id,
@@ -33,14 +33,19 @@ export function useNotesThread(convoId, { onReply, onEdit, scrollRef }) {
       time: formatNoteTime(),
       at: Date.now(),
       body,
+      attachments: attachments?.length ? attachments : undefined,
       replyTo: replyTo ? { noteId: replyTo.id, authorId: replyTo.authorId, author: replyTo.author, body: replyTo.body } : undefined,
     };
     update((t) => ({ ...t, notes: [...t.notes, note] }));
   };
 
-  const edit = (id, body) => update((t) => ({
+  const edit = (id, body, attachments = []) => update((t) => ({
     ...t,
-    notes: t.notes.map((n) => (n.id === id && n.body !== body ? { ...n, body, edited: true } : n)),
+    notes: t.notes.map((n) => {
+      if (n.id !== id) return n;
+      const same = n.body === body && (n.attachments ?? []).map((f) => f.id).join() === attachments.map((f) => f.id).join();
+      return same ? n : { ...n, body, attachments: attachments.length ? attachments : undefined, edited: true };
+    }),
   }));
 
   const remove = (id) => update((t) => ({ notes: t.notes.filter((n) => n.id !== id), pin: t.pin?.id === id ? null : t.pin }));
@@ -95,7 +100,7 @@ export function useNotesThread(convoId, { onReply, onEdit, scrollRef }) {
       {confirm?.kind === 'pin' && (
         <NoteConfirm
           title="Replace pinned note?"
-          text="Only one note can be pinned. Replace the note that's already pinned?"
+          text="Only one note can be pinned. Replace the note that’s already pinned?"
           confirmLabel="Replace"
           onClose={() => setConfirm(null)}
           onConfirm={() => { pin(confirm.id); setConfirm(null); }}
@@ -106,6 +111,7 @@ export function useNotesThread(convoId, { onReply, onEdit, scrollRef }) {
           title="Delete this note?"
           text="This note will be removed from the conversation."
           confirmLabel="Delete"
+          icon="delete"
           danger
           onClose={() => setConfirm(null)}
           onConfirm={() => { remove(confirm.id); setConfirm(null); }}

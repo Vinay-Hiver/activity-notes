@@ -13,8 +13,8 @@
 .conversation-detail { font-family: var(--fontFamily); }
 
 /* Sizes include padding and border, as in the reference (its page sets this on everything). */
-:where(.en-activity, .en-note, .en-pinned, .en-footer, .en-composer-wrap, .en-dialog),
-:where(.en-activity, .en-note, .en-pinned, .en-footer, .en-composer-wrap, .en-dialog) * { box-sizing: border-box; }
+:where(.en-activity, .en-note, .en-pinned, .en-footer, .en-composer-wrap),
+:where(.en-activity, .en-note, .en-pinned, .en-footer, .en-composer-wrap) * { box-sizing: border-box; }
 
 /* ---------- Avatar (32px, as in the reference) ---------- */
 .en-avatar { display: flex; flex: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 90px; font: var(--fontWeightMedium) 15px/1 'Inter', var(--fontFamily); color: var(--slateSurfaceWhite); }
@@ -105,8 +105,6 @@
 .en-btn--cancel:hover { background: var(--slateSurfaceSubtle100Hover); }
 .en-btn--add { min-width: 56px; border: 1px solid var(--primaryBorderDefault); background: var(--primaryBorderDefault); color: var(--slateSurfaceWhite); }
 .en-btn--add:disabled { border-color: var(--slateTextCaption); background: var(--slateTextCaption); color: var(--slateTextSubtle); opacity: 0.6; cursor: default; }
-.en-btn--danger { border: 1px solid var(--pastelRedTextBody); background: var(--pastelRedTextBody); color: var(--slateSurfaceWhite); }
-.en-btn--danger:hover { border-color: var(--pastelRedBorderDefault); background: var(--pastelRedBorderDefault); }
 
 /* ---------- Composer ---------- */
 .en-composer-wrap { position: relative; flex: none; padding: 0 8px 8px; background: var(--slateSurfaceSubtle); }
@@ -134,11 +132,6 @@
 .en-mentions__name { font-size: 14px; font-weight: var(--fontWeightMedium); line-height: 20px; color: var(--slateTextTitle); }
 .en-mentions__desc { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; font-weight: var(--fontWeightRegular); line-height: 18px; color: var(--slateTextSubtle); }
 
-/* ---------- Confirm dialog ---------- */
-.en-dialog { box-sizing: border-box; width: min(400px, calc(100% - 32px)); padding: 20px; border: 1px solid var(--slateBorderLight); border-radius: 12px; background: var(--slateSurfaceWhite); box-shadow: var(--enShadow); font-family: var(--fontFamily); }
-.en-dialog h3 { margin: 0; font-size: 16px; font-weight: var(--fontWeightMedium); line-height: 24px; color: var(--slateTextTitle); }
-.en-dialog p { margin: 8px 0 0; font-size: 14px; line-height: 20px; color: var(--slateTextBody); }
-.en-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
 
 /* In the email thread the items are 16px apart; activity cancels that gap so it sits exactly
    20px (its own padding) from the message or note above and below. */

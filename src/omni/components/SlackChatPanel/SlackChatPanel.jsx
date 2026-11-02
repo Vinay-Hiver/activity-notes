@@ -3,7 +3,7 @@ import addEmojiIcon from '../../icons/add-emoji.svg';
 import deleteMessageIcon from '../../icons/delete-message.svg';
 import openInSlackIcon from '../../icons/optn-in-slack.svg';
 import ReplyNoteComposer from '../composer/ReplyNoteComposer';
-import { ActivityGroup } from '../notes/EmailNotes';
+import { ActivityGroup, AttachmentChip } from '../notes/EmailNotes';
 import { useNotesThread } from '../notes/useNotesThread';
 import { groupActivity, seedActivity } from '../notes/threadTimeline';
 import { useConversationFields } from '../../ConversationFields';
@@ -26,7 +26,7 @@ function formatNow() {
 const EMOJIS = ['👍', '❤️', '😀', '🎉', '✅', '🙏', '🔥', '👀', '😂', '💯'];
 
 // A single Slack-style full-width message row with a hover toolbar + reactions.
-function SlackMessage({ name, time, text, role, initial, color, reactions = {}, onAddReaction, onRemoveReaction, onDelete }) {
+function SlackMessage({ name, time, text, attachments, role, initial, color, reactions = {}, onAddReaction, onRemoveReaction, onDelete }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const wrapRef = useRef(null);
 
@@ -47,7 +47,10 @@ function SlackMessage({ name, time, text, role, initial, color, reactions = {}, 
           <span className="slack-msg__name">{name}</span>
           <span className="slack-msg__time">{time}</span>
         </div>
-        <div className="slack-msg__text">{text}</div>
+        {text && <div className="slack-msg__text">{text}</div>}
+        {attachments?.length > 0 && (
+          <div className="en-attach-list">{attachments.map((f) => <AttachmentChip key={f.id} file={f} />)}</div>
+        )}
 
         {reactionList.length > 0 && (
           <div className="slack-reactions">
@@ -127,17 +130,17 @@ export default function SlackChatPanel({ inboxName, conversation }) {
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, notes.notes.length, activity.length]);
 
-  function send() {
+  function send(attachments = []) {
     const value = text.trim();
-    if (!value) return;
+    if (!value && !attachments.length) return;
     if (mode === 'note') {
-      if (context?.kind === 'edit') notes.edit(context.note.id, value);
-      else notes.add({ body: value, replyTo: context?.kind === 'reply' ? context.note : null });
+      if (context?.kind === 'edit') notes.edit(context.note.id, value, attachments);
+      else notes.add({ body: value, attachments, replyTo: context?.kind === 'reply' ? context.note : null });
       setContext(null);
       setText('');
       return;
     }
-    setMessages((prev) => [...prev, { id: `agent-${Date.now()}`, kind: 'agent-text', text: value, sender: user.name, time: formatNow() }]);
+    setMessages((prev) => [...prev, { id: `agent-${Date.now()}`, kind: 'agent-text', text: value, attachments, sender: user.name, time: formatNow() }]);
     setText('');
     setTimeout(() => {
       setMessages((prev) => [...prev, { id: `reply-${Date.now()}`, kind: 'incoming', text: randomReply(), time: formatNow() }]);
@@ -197,6 +200,7 @@ export default function SlackChatPanel({ inboxName, conversation }) {
         color={who.color}
         time={m.time}
         text={m.text}
+        attachments={m.attachments}
         reactions={m.reactions}
         onAddReaction={(emoji) => addReaction(m.id, emoji)}
         onRemoveReaction={(emoji) => removeReaction(m.id, emoji)}

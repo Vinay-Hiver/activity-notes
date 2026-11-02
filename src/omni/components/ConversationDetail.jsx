@@ -342,7 +342,7 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
       {confirm?.kind === 'pin' && (
         <NoteConfirm
           title="Replace pinned note?"
-          text="Only one note can be pinned. Replace the note that's already pinned?"
+          text="Only one note can be pinned. Replace the note that’s already pinned?"
           confirmLabel="Replace"
           onClose={() => setConfirm(null)}
           onConfirm={() => { pinNote(confirm.id); setConfirm(null); }}
@@ -353,6 +353,7 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
           title="Delete this note?"
           text="This note will be removed from the conversation."
           confirmLabel="Delete"
+          icon="delete"
           danger
           onClose={() => setConfirm(null)}
           onConfirm={() => { deleteNote(confirm.id); setConfirm(null); }}

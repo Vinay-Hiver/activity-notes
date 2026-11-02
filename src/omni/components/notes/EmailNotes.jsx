@@ -1,10 +1,14 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
+import { Button } from '../../../components/Button';
+import { Modal, ModalText } from '../../../components/Modal';
+import { Tooltip } from '../../../components/Tooltip';
 import { Icon } from '../../../icons/Icon';
 import { EyeOff } from '../../../icons/EyeOff';
 import { AtSign } from '../../../icons/AtSign';
 import { USERS, useCurrentUser } from '../../CurrentUser';
 import { useModalExit } from '../modalMotion';
+import { downloadAsZip } from '../../utils/zip';
 import '../modalMotion.css';
 import './EmailNotes.css';
 
@@ -34,7 +38,7 @@ const formatFileSize = (bytes) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-const toAttachments = (files) => Array.from(files).map((file) => ({
+export const toAttachments = (files) => Array.from(files).map((file) => ({
   id: `${file.name}-${file.size}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
   name: file.name,
   size: file.size,
@@ -178,7 +182,7 @@ function NoteQuote({ author, body, onClick }) {
   );
 }
 
-function AttachmentChip({ file, onRemove }) {
+export function AttachmentChip({ file, onRemove }) {
   return (
     <div className="en-attach" onClick={stop}>
       <button type="button" className="en-attach__open" title={file.name} onClick={(e) => { e.preventDefault(); window.open(file.url, '_blank', 'noopener'); }}>
@@ -210,22 +214,35 @@ function NoteHeading({ note }) {
   );
 }
 
-function NoteActions({ pinned, onPin, onReply, onEdit, onDelete }) {
+/** One hover action: an icon button with its tooltip above it, centred. */
+const NoteAction = ({ label, children, ...props }) => (
+  <Tooltip content={label} placement="top" portal>
+    <IconBtn aria-label={label} {...props}>{children}</IconBtn>
+  </Tooltip>
+);
+
+function NoteActions({ pinned, attachments, onPin, onReply, onEdit, onDelete }) {
   return (
     <div className="en-note__actions" onClick={stop} onKeyDown={stop}>
-      <IconBtn aria-label={pinned ? 'Unpin' : 'Pin to top'} aria-pressed={pinned} title={pinned ? 'Unpin' : 'Pin to top'} className={pinned ? 'is-pinned' : ''} onClick={onPin}>
+      {/* With more than one file, the first action saves them all in one .zip. */}
+      {attachments?.length > 1 && (
+        <NoteAction label="Download all attachments" onClick={() => downloadAsZip(attachments, 'note-attachments.zip')}>
+          <Icon name="download" size={14} />
+        </NoteAction>
+      )}
+      <NoteAction label={pinned ? 'Unpin' : 'Pin to top'} aria-pressed={pinned} className={pinned ? 'is-pinned' : ''} onClick={onPin}>
         <Icon name={pinned ? 'unpin' : 'pin'} size={14} />
-      </IconBtn>
-      <IconBtn aria-label="Reply" title="Reply" onClick={onReply}><Icon name="reply" size={14} /></IconBtn>
+      </NoteAction>
+      <NoteAction label="Reply" onClick={onReply}><Icon name="reply" size={14} /></NoteAction>
       {/* Edit and Delete only show on your own notes (no handler is passed for anyone else's). */}
-      {onEdit && <IconBtn aria-label="Edit" title="Edit" onClick={onEdit}><Icon name="edit" size={14} /></IconBtn>}
-      {onDelete && <IconBtn aria-label="Delete" title="Delete" onClick={onDelete}><Icon name="delete" size={14} /></IconBtn>}
+      {onEdit && <NoteAction label="Edit" onClick={onEdit}><Icon name="edit" size={14} /></NoteAction>}
+      {onDelete && <NoteAction label="Delete" onClick={onDelete}><Icon name="delete" size={14} /></NoteAction>}
     </div>
   );
 }
 
 export function NoteCard({ note, elementId, expanded, pinned, highlighted, onToggle, onPin, onReply, onQuoteClick, onEdit, onDelete }) {
-  const actions = <NoteActions pinned={pinned} onPin={onPin} onReply={onReply} onEdit={onEdit} onDelete={onDelete} />;
+  const actions = <NoteActions pinned={pinned} attachments={note.attachments} onPin={onPin} onReply={onReply} onEdit={onEdit} onDelete={onDelete} />;
   return (
     <article
       id={elementId}
@@ -502,7 +519,7 @@ export function NoteComposer({ editing, replyTo, onSubmit, onCancel, onQuoteClic
           <div className="en-attach-list">{attachments.map((f) => <AttachmentChip key={f.id} file={f} onRemove={() => removeFile(f.id)} />)}</div>
         )}
         <div className="en-composer__bar">
-          <IconBtn aria-label="Attach file" className={`en-icon-btn--tool${attachments.length || dropZone ? ' is-active' : ''}`} onClick={() => setDropZone(true)}>
+          <IconBtn aria-label="Attach file" className={`en-icon-btn--tool${attachments.length || dropZone ? ' is-active' : ''}`} onClick={() => setDropZone((shown) => !shown)}>
             <Icon name="attachment" size={16} />
           </IconBtn>
           <IconBtn aria-label="Mention" aria-haspopup="listbox" aria-expanded={mentions.open} className={`en-icon-btn--tool${mentions.open ? ' is-active' : ''}`} onMouseDown={(e) => e.preventDefault()} onClick={mentions.openPicker}>
@@ -520,8 +537,11 @@ export function NoteComposer({ editing, replyTo, onSubmit, onCancel, onQuoteClic
 
 /* ---------- Confirm dialogs ---------- */
 
-/** A small confirm dialog (Replace pinned note, Delete note), styled as in the reference prototype. */
-export function NoteConfirm({ title, text, confirmLabel, danger, onConfirm, onClose }) {
+/**
+ * A small confirm dialog: the HOT Modal (Figma: Activity - Notes › 12:29213 Delete, 12:29892 Replace).
+ * `icon` is an optional icon name before the title, such as delete.
+ */
+export function NoteConfirm({ title, text, confirmLabel, danger, icon, onConfirm, onClose }) {
   const [closing, exit] = useModalExit();
   const close = () => exit(onClose);
   React.useEffect(() => {
@@ -531,13 +551,20 @@ export function NoteConfirm({ title, text, confirmLabel, danger, onConfirm, onCl
   }, [close]);
   return createPortal(
     <div className={`lc-backdrop${closing ? ' is-closing' : ''}`} onClick={close}>
-      <div className="en-dialog" role="dialog" aria-modal="true" aria-labelledby="en-dialog-title" onClick={stop}>
-        <h3 id="en-dialog-title">{title}</h3>
-        <p>{text}</p>
-        <div className="en-dialog__actions">
-          <button type="button" className="en-btn en-btn--cancel" onClick={close}>Cancel</button>
-          <button type="button" className={`en-btn ${danger ? 'en-btn--danger' : 'en-btn--add'}`} onClick={() => exit(onConfirm)}>{confirmLabel}</button>
-        </div>
+      <div onClick={stop}>
+        <Modal
+          title={title}
+          icon={icon}
+          onClose={close}
+          actions={(
+            <>
+              <Button variant="secondary" onClick={close}>Cancel</Button>
+              <Button variant={danger ? 'error' : 'primary'} onClick={() => exit(onConfirm)}>{confirmLabel}</Button>
+            </>
+          )}
+        >
+          <ModalText>{text}</ModalText>
+        </Modal>
       </div>
     </div>,
     document.body

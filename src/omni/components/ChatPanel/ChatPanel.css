@@ -402,3 +402,6 @@
 
 /* A pinned note sits 20px above the first message (the thread's 4px gap plus 16px) */
 .chat-panel__thread > .en-pinned { margin-bottom: 16px; }
+
+/* Files sent with a message sit under its bubble, right-aligned */
+.chat-message__files { justify-content: flex-end; }

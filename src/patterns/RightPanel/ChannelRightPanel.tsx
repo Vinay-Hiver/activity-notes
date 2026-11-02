@@ -116,8 +116,8 @@ function customFieldsSection(section: ResolvedSection, fields: CustomFieldValue[
   )
 }
 
-/** Sections this prototype leaves out of every channel's panel. */
-const HIDDEN_SECTIONS = ['conversation', 'customFields']
+/** Sections this prototype leaves out of every channel's panel. Notes are in the thread itself, so the Notes section is gone too. */
+const HIDDEN_SECTIONS = ['conversation', 'customFields', 'notes']
 
 /** Email shows notes and activity in the thread itself, so its panel has no Activity & Notes section. */
 const EMAIL_HIDDEN_SECTIONS = ['activity']

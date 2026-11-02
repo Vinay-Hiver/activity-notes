@@ -2,7 +2,7 @@ import React from 'react';
 import { Dropdown } from '../../../components/Dropdown';
 import { Popover } from '../../../components/Popover';
 import { Icon } from '../../../icons/Icon';
-import { MentionHighlight, NoteQuote, useMentions } from '../notes/EmailNotes';
+import { AttachmentChip, MentionHighlight, NoteQuote, toAttachments, useMentions } from '../notes/EmailNotes';
 import './ReplyNoteComposer.css';
 
 // The composer for real-time channels (Chat, Slack, WhatsApp, SMS), Figma: Activity - Notes › 21:5631.
@@ -48,29 +48,49 @@ function EmojiButton({ onSelect }) {
 
 /**
  * `mode` is 'reply' or 'note'; `value` / `onValueChange` are the text. Enter sends (Shift + Enter for a
- * new line). In Notes mode, `context` can be { kind: 'reply' | 'edit', note }: replying shows the
+ * new line); `onSend(attachments)` gets the files attached, as in the email note composer: Attach opens
+ * a drop zone, and files can also be dropped on or pasted into the composer. In Notes mode, `context` can be { kind: 'reply' | 'edit', note }: replying shows the
  * note's quote above the text, editing fills in its text and Send becomes Save; `onClearContext`
- * drops it (also on Escape).
+ * drops it (also on Escape). `extraTools` are channel-specific buttons after Emoji (WhatsApp templates).
  */
-export default function ReplyNoteComposer({ mode, onModeChange, value, onValueChange, onSend, placeholder, context, onClearContext, onQuoteClick }) {
+export default function ReplyNoteComposer({ mode, onModeChange, value, onValueChange, onSend, placeholder, context, onClearContext, onQuoteClick, extraTools }) {
   const switchRef = React.useRef(null);
   const [open, setOpen] = React.useState(false);
   const mentions = useMentions(value, onValueChange);
-  const canSend = value.trim().length > 0;
+  const [attachments, setAttachments] = React.useState([]);
+  const [dropZone, setDropZone] = React.useState(false);
+  const [dropping, setDropping] = React.useState(false);
+  const canSend = value.trim().length > 0 || attachments.length > 0;
   const isNote = mode === 'note';
 
-  // Picking a note to reply to or edit puts the cursor in the box.
+  // Picking a note to reply to or edit puts the cursor in the box; editing brings back its files.
   React.useEffect(() => {
+    setAttachments(context?.kind === 'edit' && context.note.attachments ? [...context.note.attachments] : []);
+    setDropZone(false);
     if (!context) return;
     const field = mentions.fieldRef.current;
     field?.focus();
     if (field) field.setSelectionRange(field.value.length, field.value.length);
   }, [context]);
 
+  const addFiles = (files) => {
+    const next = toAttachments(files);
+    if (next.length) { setAttachments((cur) => [...cur, ...next]); setDropZone(false); }
+  };
+  const removeFile = (id) => setAttachments((cur) => cur.filter((f) => f.id !== id));
+
+  const send = () => {
+    if (!canSend) return;
+    onSend(attachments);
+    setAttachments([]);
+    setDropZone(false);
+  };
+
   const onKeyDown = (e) => {
     if (isNote && mentions.handleKey(e)) return;
     if (e.key === 'Escape' && context) { e.preventDefault(); onClearContext(); return; }
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (canSend) onSend(); }
+    if (e.key === 'Escape' && dropZone) { e.preventDefault(); setDropZone(false); return; }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
   };
 
   const fieldProps = isNote
@@ -80,7 +100,12 @@ export default function ReplyNoteComposer({ mode, onModeChange, value, onValueCh
   return (
     <div className="rn-composer-wrap">
       {isNote && mentions.menu}
-      <div className={`rn-composer${isNote ? ' rn-composer--note' : ''}`}>
+      <div
+        className={`rn-composer${isNote ? ' rn-composer--note' : ''}${dropping ? ' is-drop' : ''}`}
+        onDragOver={(e) => { e.preventDefault(); setDropping(true); }}
+        onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setDropping(false); }}
+        onDrop={(e) => { e.preventDefault(); setDropping(false); addFiles(e.dataTransfer.files); }}
+      >
         {isNote && context && (
           <div className="rn-composer__context">
             {context.kind === 'reply'
@@ -101,8 +126,23 @@ export default function ReplyNoteComposer({ mode, onModeChange, value, onValueCh
             aria-label={isNote ? 'Internal note' : 'Reply'}
             value={value}
             onKeyDown={onKeyDown}
+            onPaste={(e) => { if (e.clipboardData?.files?.length) { e.preventDefault(); addFiles(e.clipboardData.files); } }}
           />
         </div>
+        {(dropZone || dropping || attachments.length > 0) && (
+          <div className="rn-composer__files">
+            {(dropZone || dropping) && (
+              <label className={`en-composer__drop${dropping ? ' is-active' : ''}`}>
+                <input type="file" className="en-file-input" multiple onChange={(e) => { const files = Array.from(e.target.files ?? []); e.target.value = ''; addFiles(files); }} />
+                <Icon name="attachment" size={16} />
+                <span>{dropping ? 'Drop files to attach' : 'Drop files here or click to browse'}</span>
+              </label>
+            )}
+            {attachments.length > 0 && (
+              <div className="en-attach-list">{attachments.map((f) => <AttachmentChip key={f.id} file={f} onRemove={() => removeFile(f.id)} />)}</div>
+            )}
+          </div>
+        )}
         <div className="rn-composer__bar">
           <div className="rn-composer__left">
             <button
@@ -126,7 +166,7 @@ export default function ReplyNoteComposer({ mode, onModeChange, value, onValueCh
               />
             </Popover>
             <div className="rn-composer__tools">
-              <button type="button" className="rn-composer__tool" aria-label="Attach file"><Icon name="attachment" size={14} /></button>
+              <button type="button" className={`rn-composer__tool${attachments.length || dropZone ? ' is-active' : ''}`} aria-label="Attach file" onClick={() => setDropZone((shown) => !shown)}><Icon name="attachment" size={14} /></button>
               {isNote && (
                 <button
                   type="button"
@@ -141,9 +181,10 @@ export default function ReplyNoteComposer({ mode, onModeChange, value, onValueCh
                 </button>
               )}
               <EmojiButton onSelect={(emoji) => onValueChange(value + emoji)} />
+              {extraTools}
             </div>
           </div>
-          <button type="button" className="rn-composer__send" disabled={!canSend} onClick={onSend}>
+          <button type="button" className="rn-composer__send" disabled={!canSend} onClick={send}>
             {!isNote ? 'Send' : context?.kind === 'edit' ? 'Save' : 'Add'}
           </button>
         </div>
