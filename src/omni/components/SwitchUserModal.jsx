@@ -3,11 +3,10 @@ import { createPortal } from 'react-dom';
 import { Modal } from '../../components/Modal';
 import { ListAvatar, ListItem } from '../../components/List';
 import { USERS, useCurrentUser } from '../CurrentUser';
-import './link/LinkConversationModal.css';
 import './modalMotion.css';
 import { useModalExit } from './modalMotion';
 
-// The HOT Modal has no backdrop of its own; this uses the same dimmed, centred backdrop as the link modals.
+// The HOT Modal has no backdrop of its own; this adds a dimmed, centred one.
 
 /** Lists the people you can view the prototype as; picking one enters their view. */
 export default function SwitchUserModal({ onClose }) {

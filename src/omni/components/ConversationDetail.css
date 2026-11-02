@@ -79,7 +79,7 @@
   padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px; /* as in the Omni Notes & Activity feed, so notes and activity get the same room */
 }
 
 .convo-card {

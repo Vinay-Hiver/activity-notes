@@ -1,3 +1,10 @@
+/* The dimmed, centred backdrop every modal sits on (the HOT Modal has none of its own). */
+.lc-backdrop {
+  position: fixed; inset: 0; z-index: 999;
+  display: flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--slateTextTitle) 40%, transparent);
+}
+
 /* Shared entrance motion for every modal: the backdrop fades in and the dialog scales up from 95% and settles. */
 /* Only the backdrop's colour fades (not its opacity), so it never fades the dialog inside it as well. */
 @keyframes modal-backdrop-in { from { background-color: transparent; } }
@@ -5,10 +12,10 @@
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: none; }
 }
-.lc-backdrop, .cv-backdrop { animation: modal-backdrop-in 200ms ease-out both; }
-.lc-backdrop > *, .cv-backdrop > .cv-window { animation: modal-dialog-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.lc-backdrop { animation: modal-backdrop-in 200ms ease-out both; }
+.lc-backdrop > * { animation: modal-dialog-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both; }
 @media (prefers-reduced-motion: reduce) {
-  .lc-backdrop, .cv-backdrop, .lc-backdrop > *, .cv-backdrop > .cv-window { animation: none; }
+  .lc-backdrop, .lc-backdrop > * { animation: none; }
 }
 
 /* Exit: the same motion in reverse (.is-closing is added by useModalExit in modalMotion.js) */
@@ -17,8 +24,8 @@
   from { opacity: 1; transform: none; }
   to { opacity: 0; transform: scale(0.95); }
 }
-.lc-backdrop.is-closing, .cv-backdrop.is-closing { animation: modal-backdrop-out 220ms cubic-bezier(0.7, 0, 0.84, 0) both; pointer-events: none; }
-.lc-backdrop.is-closing > *, .cv-backdrop.is-closing > .cv-window { animation: modal-dialog-out 220ms cubic-bezier(0.7, 0, 0.84, 0) both; }
+.lc-backdrop.is-closing { animation: modal-backdrop-out 220ms cubic-bezier(0.7, 0, 0.84, 0) both; pointer-events: none; }
+.lc-backdrop.is-closing > * { animation: modal-dialog-out 220ms cubic-bezier(0.7, 0, 0.84, 0) both; }
 @media (prefers-reduced-motion: reduce) {
-  .lc-backdrop.is-closing, .cv-backdrop.is-closing, .lc-backdrop.is-closing > *, .cv-backdrop.is-closing > .cv-window { animation: none; }
+  .lc-backdrop.is-closing, .lc-backdrop.is-closing > * { animation: none; }
 }

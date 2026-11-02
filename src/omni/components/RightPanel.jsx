@@ -14,7 +14,6 @@ import {
 import customFieldsIcon from '../icons/custom-fields-icon.svg';
 import skillsIcon from '../icons/skills-icon.svg';
 import activityNotesIcon from '../icons/activity-notes.svg';
-import linkedConvoIcon from '../icons/linked-convo-icon.svg';
 import contactIcon from '../icons/contact-icon.svg';
 import dragIcon from '../icons/drag-icon.svg';
 import accountIcon from '../icons/account-icon.svg';
@@ -334,19 +333,6 @@ export default function RightPanel({ inboxName = 'Email Inbox Name', channel = '
       ),
     },
     {
-      id: 'linked-conversations',
-      icon: <Img src={linkedConvoIcon} size={16} />,
-      title: 'Linked conversations',
-      content: (
-        <div className="rp-linked">
-          <button type="button" className="rp-linked__btn">Link</button>
-          <p className="rp-linked__desc">
-            Link and track related conversations from one place for faster context and resolutions.
-          </p>
-        </div>
-      ),
-    },
-    {
       id: 'skills',
       icon: <Img src={skillsIcon} size={16} />,
       title: 'Skills',
@@ -386,7 +372,7 @@ export default function RightPanel({ inboxName = 'Email Inbox Name', channel = '
   ];
 
   // Display order (Contact above Account).
-  const ORDER = ['contact', 'account', 'custom-fields', 'linked-conversations', 'skills', 'activity'];
+  const ORDER = ['contact', 'account', 'custom-fields', 'skills', 'activity'];
   initialSections.sort((a, b) => ORDER.indexOf(a.id) - ORDER.indexOf(b.id));
 
   // Slack channel sections

@@ -33,7 +33,8 @@
 
 /* Thread — extra top padding so the first message's hover toolbar
    (which floats above the row) doesn't overlap the top bar. */
-.slack-thread { flex: 1; min-height: 0; overflow-y: auto; padding-top: 20px; }
+/* The thread and composer sit in a centred column of at most 900px. */
+.slack-thread { flex: 1; min-height: 0; overflow-y: auto; padding: 20px max(0px, calc((100% - 900px) / 2)) 0; }
 
 /* Message row (full width) */
 .slack-msg {
@@ -108,7 +109,7 @@
 .slack-emoji-picker__item:hover { background: var(--slateSurfaceSubtle100, #f1f5f9); }
 
 /* Composer */
-.slack-composer-wrap { flex-shrink: 0; padding: 20px; }
+.slack-composer-wrap { flex-shrink: 0; padding: 20px max(20px, calc((100% - 900px) / 2 + 20px)); }
 .slack-composer {
   border: 1px solid var(--slateBorderLight);
   border-radius: 6px;

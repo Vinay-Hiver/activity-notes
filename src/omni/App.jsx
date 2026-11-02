@@ -4,7 +4,7 @@ import './App.css';
 import Sidebar from './Sidebar';
 import ConversationList from './components/ConversationList';
 import ConversationDetail from './components/ConversationDetail';
-import LinkedRightPanel from './components/link/LinkedRightPanel';
+import ConversationRightPanel from './components/ConversationRightPanel';
 import ChannelChatView from './components/ChannelChatView';
 import VoiceCallView from './components/voice/VoiceCallView';
 import { VOICE_INBOXES } from './data/voiceCalls';
@@ -98,8 +98,7 @@ const generateDummyConversations = (inbox, type) => {
   });
 };
 
-// Each user opens on the Unassigned view of the first inbox they are a member of
-// (Chat Support 01 for Michael, Chat Support 02 for Jim).
+// Each user opens on the Unassigned view of the first inbox they are a member of.
 const firstInboxFor = (user) =>
   Object.keys(INITIAL_VIEWS_BY_INBOX).find((name) => !user.hiddenInboxes?.includes(name));
 
@@ -131,7 +130,7 @@ function App() {
     // Each route/page sets its own title (e.g. SettingsPage). Only own the
     // mailbox title here so this always-mounted component doesn't clobber it.
     if (location.pathname === '/') {
-      document.title = 'Linked Conversations';
+      document.title = 'Activity and Notes';
     }
   }, [location.pathname]);
 
@@ -177,7 +176,7 @@ function App() {
                   setSignatures={setSignatures}
                   defaultSignatureId={defaultSignatureId}
                 />
-                <LinkedRightPanel channel="email" ticketId={selectedConversation?.ticketId} inboxName={activeFilter.inbox} unassigned={activeFilter.type === 'Unassigned'} conversationId={String(selectedId)} />
+                <ConversationRightPanel channel="email" ticketId={selectedConversation?.ticketId} inboxName={activeFilter.inbox} unassigned={activeFilter.type === 'Unassigned'} conversationId={String(selectedId)} />
               </>
             )}
           </>

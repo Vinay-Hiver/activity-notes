@@ -1,17 +1,10 @@
 import React from 'react';
 
 // The people you can view the prototype as. Michael's view is the default.
-// Michael is a member of every inbox. Jim is only a member of the "02" inboxes
-// (`hiddenInboxes` lists the ones he is not part of).
+// Both are members of every inbox (`hiddenInboxes` lists any inbox a user is not part of).
 export const USERS = [
   { id: 'michael', name: 'Michael Scott', email: 'michael.scott@hiverhq.co.in', color: 'red', hiddenInboxes: [] },
-  {
-    id: 'jim',
-    name: 'Jim Halpert',
-    email: 'jim.halpert@hiverhq.co.in',
-    color: 'lightBlue',
-    hiddenInboxes: ['Chat Support 01', 'Slack Support 01', 'WhatsApp Support 01', 'SMS Support 01', 'Voice Support 01', 'Email Support 01'],
-  },
+  { id: 'jim', name: 'Jim Halpert', email: 'jim.halpert@hiverhq.co.in', color: 'lightBlue', hiddenInboxes: [] },
 ];
 
 const CurrentUserContext = React.createContext({ user: USERS[0], switchUser: () => {} });

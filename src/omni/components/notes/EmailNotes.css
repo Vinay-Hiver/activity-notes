@@ -1,0 +1,142 @@
+/* Notes and activity in the email thread. Colours, sizes and type match the
+   "Omni Notes & Activity" prototype exactly. */
+
+/* The note colours there have no HOT token, so they are kept here once (on :root, as the dialog is drawn on the page body). */
+:root {
+  --enNoteSurface: #fffdf7;
+  --enNoteBorder: #eadfbe;
+  --enNoteChipBorder: #eee6d0;
+  --enMenuActive: #eef2f6;
+  --enShadow: 0 10px 15px -3px color-mix(in srgb, var(--slateTextTitle) 10%, transparent), 0 4px 6px -4px color-mix(in srgb, var(--slateTextTitle) 10%, transparent);
+}
+
+.conversation-detail { font-family: var(--fontFamily); }
+
+/* Sizes include padding and border, as in the reference (its page sets this on everything). */
+:where(.en-activity, .en-note, .en-pinned, .en-footer, .en-composer-wrap, .en-dialog),
+:where(.en-activity, .en-note, .en-pinned, .en-footer, .en-composer-wrap, .en-dialog) * { box-sizing: border-box; }
+
+/* ---------- Avatar (32px, as in the reference) ---------- */
+.en-avatar { display: flex; flex: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 90px; font: var(--fontWeightMedium) 15px/1 'Inter', var(--fontFamily); color: var(--slateSurfaceWhite); }
+.en-avatar--lightBlue { background: var(--pastelLightBlueBorderDefault); }
+.en-avatar--orange { background: var(--pastelOrangeBorderDefault); }
+.en-avatar--green { background: var(--pastelGreenSurfaceDefault); }
+.en-avatar--purple { background: var(--pastelPurpleBorderDefault); }
+.en-avatar--red { background: var(--pastelRed400); }
+.en-avatar--yellow { background: var(--pastelYellowBorderDefault); }
+.en-avatar--violet { background: var(--pastelVioletBorderDefault); }
+.en-avatar--grey { background: var(--slateTextDisabled); }
+
+/* ---------- Small icon buttons ---------- */
+.en-icon-btn { display: flex; flex: none; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 6px; background: none; cursor: pointer; color: var(--slateTextSubtle); }
+.en-icon-btn:hover, .en-icon-btn.is-active { background: var(--slateSurfaceSubtle100Hover); }
+
+/* ---------- Activity ---------- */
+.en-activity { display: flex; flex-direction: column; gap: 6px; padding: 2px 12px 2px 13px; }
+.en-activity__row { position: relative; display: flex; align-items: center; gap: 8px; padding: 2px 2px 2px 0; color: var(--slateTextBody); }
+.en-activity__row svg { flex: none; }
+.en-activity__row p { flex: 1; min-width: 0; margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; line-height: 20px; color: var(--slateTextBody); }
+/* The time shows on hover only */
+.en-activity__time { flex: none; font-size: 12px; line-height: 18px; color: var(--slateTextSubtle); white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 120ms ease; }
+.en-activity__row:hover .en-activity__time { opacity: 1; }
+.en-activity__more { align-self: flex-start; padding: 0; border: 0; background: none; cursor: pointer; font-family: inherit; font-size: 13px; line-height: 18px; color: var(--primaryBorderDefault); }
+
+/* ---------- Note card ---------- */
+.en-note { box-sizing: border-box; display: flex; align-items: flex-start; gap: 12px; width: 100%; padding: 10px 12px; border: 1px solid var(--enNoteBorder); border-radius: 8px; background: var(--enNoteSurface); text-align: left; cursor: pointer; }
+.en-note.is-open { flex-direction: column; align-items: stretch; gap: 8px; }
+.en-note:focus-visible { outline: 2px solid var(--primaryBorderDefault); outline-offset: 2px; }
+/* Briefly ringed when reached from a quote */
+.en-note.is-target { box-shadow: 0 0 0 2px var(--primaryBorderDefault); }
+.en-note__collapsed { flex: 1; min-width: 0; overflow: hidden; }
+.en-note__top { display: flex; align-items: center; gap: 12px; }
+.en-note__heading { display: flex; flex: 1; gap: 4px; min-width: 0; overflow: hidden; white-space: nowrap; font-size: 13px; line-height: 20px; }
+.en-note__name { font-weight: var(--fontWeightMedium); color: var(--slateTextBody); }
+.en-note__action { color: var(--slateTextSubtle); }
+.en-note__time { flex: none; font-size: 13px; line-height: 19.5px; color: var(--slateTextSubtle); white-space: nowrap; }
+.en-note__text { margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; line-height: 20px; color: var(--slateTextSubtle); }
+.en-note__text.is-open { white-space: normal; color: var(--slateTextBody); }
+.en-note__edited { font-weight: var(--fontWeightMedium); color: var(--slateTextSubtle); }
+.en-note__attach-count { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; vertical-align: middle; color: var(--slateTextSubtle); }
+.en-note__attach-count svg { width: 12px; height: 12px; }
+.en-note__hidden { display: flex; align-items: center; gap: 8px; font-size: 12px; line-height: 18px; color: var(--slateTextSubtle); }
+
+/* Pin, Reply, Edit, Delete: 20px buttons shown while the note is hovered */
+.en-note__actions { display: none; flex: none; align-items: center; gap: 6px; margin-right: 2px; }
+.en-note:hover .en-note__actions { display: flex; }
+.en-note__actions .en-icon-btn { width: 20px; height: 20px; border-radius: 4px; }
+.en-note__actions .en-icon-btn:hover { background: var(--slateSurfaceWhite); }
+.en-note__actions .en-icon-btn.is-pinned { background: var(--primarySurfaceSubtle); }
+
+.en-mention { color: var(--primaryBorderDefault); }
+
+/* A quoted note (in a reply, and in the composer when replying) */
+.en-quote { display: flex; align-items: stretch; gap: 8px; width: 100%; margin: 0; padding: 4px 8px 4px 0; border: 0; border-radius: 4px; background: transparent; text-align: left; cursor: pointer; font-family: inherit; }
+.en-quote:hover { background: var(--slateSurfaceWhite); }
+.en-quote__bar { flex: none; width: 2px; border-radius: 2px; background: var(--slateTextCaption); }
+.en-quote__text { display: -webkit-box; min-width: 0; overflow: hidden; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-size: 13px; line-height: 20px; color: var(--slateTextSubtle); }
+
+/* Pinned copy at the top of the thread */
+.en-pinned { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.en-pinned__by { display: flex; align-items: center; gap: 6px; margin: 0; padding: 8px 4px 0; font-size: 12px; line-height: 18px; font-weight: var(--fontWeightMedium); color: var(--slateTextSubtle); }
+.en-pinned__by svg { width: 12px; height: 12px; }
+
+/* ---------- Attachments ---------- */
+.en-attach-list { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; padding-top: 8px; }
+.en-attach { display: flex; align-items: center; gap: 4px; max-width: 240px; padding: 4px; border: 1px solid var(--slateBorderLight); border-radius: 8px; background: var(--slateSurfaceSubtle); }
+.en-note .en-attach { border-color: var(--enNoteChipBorder); background: var(--slateSurfaceWhite); }
+.en-attach__open { display: flex; flex: 1; align-items: center; gap: 8px; min-width: 0; padding: 2px 4px; border: 0; background: none; text-align: left; cursor: pointer; font-family: inherit; }
+.en-attach__thumb, .en-attach__icon { flex: none; width: 32px; height: 32px; border-radius: 6px; }
+.en-attach__thumb { object-fit: cover; background: var(--slateSurfaceSubtle100Hover); }
+.en-attach__icon { display: flex; align-items: center; justify-content: center; border: 1px solid var(--slateBorderLight); background: var(--slateSurfaceWhite); color: var(--slateTextSubtle); }
+.en-attach__copy { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.en-attach__name { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; font-weight: var(--fontWeightMedium); line-height: 18px; color: var(--slateTextTitle); }
+.en-attach__size { font-size: 12px; line-height: 16px; color: var(--slateTextSubtle); }
+.en-attach__remove { display: flex; flex: none; align-items: center; justify-content: center; width: 22px; height: 22px; padding: 0; border: 0; border-radius: 4px; background: none; cursor: pointer; color: var(--slateTextSubtle); }
+.en-attach__remove svg { width: 12px; height: 12px; }
+.en-attach__remove:hover { background: var(--slateSurfaceSubtle100Hover); }
+
+/* ---------- Footer (Reply / Add note) ---------- */
+.en-footer { display: flex; flex: none; gap: 12px; padding: 12px; border-top: 0.667px solid var(--slateBorderMild); background: var(--slateSurfaceWhite); }
+.en-footer__btn { display: flex; align-items: center; justify-content: center; gap: 10px; height: 32px; padding: 4px 12px; border: 1px solid var(--slateBorderLight); border-radius: 6px; background: var(--slateSurfaceWhite); cursor: pointer; font-family: inherit; font-size: 14px; font-weight: var(--fontWeightMedium); line-height: 20px; color: var(--slateTextBody); }
+
+/* ---------- Text buttons (composer and dialogs) ---------- */
+.en-btn { height: 34px; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: var(--fontWeightMedium); line-height: 20px; }
+.en-btn--cancel { border: 1px solid var(--slateBorderLight); background: var(--slateSurfaceWhite); color: var(--slateTextBody); }
+.en-btn--cancel:hover { background: var(--slateSurfaceSubtle100Hover); }
+.en-btn--add { min-width: 56px; border: 1px solid var(--primaryBorderDefault); background: var(--primaryBorderDefault); color: var(--slateSurfaceWhite); }
+.en-btn--add:disabled { border-color: var(--slateTextCaption); background: var(--slateTextCaption); color: var(--slateTextSubtle); opacity: 0.6; cursor: default; }
+.en-btn--danger { border: 1px solid var(--pastelRedTextBody); background: var(--pastelRedTextBody); color: var(--slateSurfaceWhite); }
+.en-btn--danger:hover { border-color: var(--pastelRedBorderDefault); background: var(--pastelRedBorderDefault); }
+
+/* ---------- Composer ---------- */
+.en-composer-wrap { position: relative; flex: none; padding: 0 8px 8px; background: var(--slateSurfaceSubtle); }
+.en-composer { box-sizing: border-box; display: flex; flex-direction: column; min-height: 120px; padding: 12px; border: 1px solid var(--slateBorderLight); border-radius: 6px; background: var(--slateSurfaceWhite); transition: border-color 120ms ease; }
+.en-composer.is-drop { border-color: var(--primaryBorderDefault); background: var(--primarySurfaceSubtle); }
+.en-composer .en-quote { margin-bottom: 8px; padding: 8px; border-radius: 6px; background: var(--slateSurfaceSubtle); }
+.en-composer .en-quote:hover { background: var(--slateSurfaceSubtle100Hover); }
+.en-composer__field { position: relative; flex: 1; width: 100%; min-height: 52px; }
+.en-composer__highlight, .en-composer__input { font-family: inherit; font-size: 14px; font-weight: var(--fontWeightMedium); line-height: 20px; }
+.en-composer__highlight { min-height: 52px; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--slateTextBody); }
+/* The textarea's text is transparent; the copy under it shows the words with coloured @mentions. */
+.en-composer__input { position: absolute; inset: 0; box-sizing: border-box; width: 100%; height: 100%; padding: 0; border: 0; outline: 0; resize: none; background: transparent; color: transparent; caret-color: var(--slateTextBody); }
+.en-composer__input::placeholder { color: var(--slateTextDisabled); font-weight: var(--fontWeightMedium); }
+.en-composer__drop { position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; margin-top: 8px; padding: 10px 12px; overflow: hidden; border: 1px dashed var(--slateBorderDark); border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: var(--fontWeightMedium); line-height: 18px; color: var(--slateTextSubtle); }
+.en-composer__drop.is-active { border-color: var(--primaryBorderDefault); background: var(--primarySurfaceSubtle); color: var(--slateTextBody); }
+.en-file-input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.en-composer__bar { display: flex; align-items: center; gap: 8px; width: 100%; padding-top: 8px; }
+.en-composer__at { font-size: 16px; font-weight: var(--fontWeightMedium); line-height: 16px; }
+.en-composer__spacer { flex: 1; min-width: 0; }
+
+/* @mention list above the composer */
+.en-mentions { position: absolute; bottom: calc(100% + 6px); left: 8px; z-index: 30; box-sizing: border-box; width: min(304px, calc(100% - 16px)); max-height: 300px; overflow-y: auto; padding: 8px; border: 1px solid var(--slateBorderLight); border-radius: 12px; background: var(--slateSurfaceWhite); box-shadow: var(--enShadow); }
+.en-mentions__item { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 8px 12px; border: 0; border-radius: 8px; background: none; text-align: left; cursor: pointer; font-family: inherit; }
+.en-mentions__item.is-active { background: var(--enMenuActive); }
+.en-mentions__copy { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.en-mentions__name { font-size: 14px; font-weight: var(--fontWeightMedium); line-height: 20px; color: var(--slateTextTitle); }
+.en-mentions__desc { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; font-weight: var(--fontWeightRegular); line-height: 18px; color: var(--slateTextSubtle); }
+
+/* ---------- Confirm dialog ---------- */
+.en-dialog { box-sizing: border-box; width: min(400px, calc(100% - 32px)); padding: 20px; border: 1px solid var(--slateBorderLight); border-radius: 12px; background: var(--slateSurfaceWhite); box-shadow: var(--enShadow); font-family: var(--fontFamily); }
+.en-dialog h3 { margin: 0; font-size: 16px; font-weight: var(--fontWeightMedium); line-height: 24px; color: var(--slateTextTitle); }
+.en-dialog p { margin: 8px 0 0; font-size: 14px; line-height: 20px; color: var(--slateTextBody); }
+.en-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }

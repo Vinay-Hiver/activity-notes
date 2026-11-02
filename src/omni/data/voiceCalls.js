@@ -2,7 +2,7 @@
 // The call UI is ported from omni-voice-channel (ActiveCallView): an ongoing call
 // shows the connected bar; an ended call shows the recording, Summary and Transcript.
 
-export const VOICE_INBOXES = ['Voice Support 01', 'Voice Support 02'];
+export const VOICE_INBOXES = ['Phone Support'];
 
 // The transcript of the sample recording (src/omni/assets/voice/sample-audio.mp3),
 // as in omni-voice-channel. Every ended call plays the same recording.
@@ -24,7 +24,7 @@ export const VOICE_CALLS = [
   {
     id: 'voice-support-01-mine-0',
     direction: 'Inbound',
-    inbox: 'Voice Support 01',
+    inbox: 'Phone Support',
     view: 'Mine',
     name: null, // number only: the caller has no saved name
     phone: '+91 98765 43210',
@@ -38,7 +38,7 @@ export const VOICE_CALLS = [
     id: 'voice-support-01-mine-1',
     direction: 'Inbound',
     duration: '4m 32s',
-    inbox: 'Voice Support 01',
+    inbox: 'Phone Support',
     view: 'Mine',
     name: 'Dakota Wilder',
     phone: '+1 (555) 014-2290',
@@ -51,7 +51,7 @@ export const VOICE_CALLS = [
     id: 'voice-support-01-unassigned-0',
     direction: 'Inbound',
     duration: '2m 18s',
-    inbox: 'Voice Support 01',
+    inbox: 'Phone Support',
     view: 'Unassigned',
     name: 'Priya Nair',
     phone: '+1 (555) 018-7731',
@@ -59,45 +59,6 @@ export const VOICE_CALLS = [
     time: 'Mar 11, 04:15 PM',
     status: 'ended',
     summary: 'Priya wanted to upgrade her team from the Pro plan to Enterprise and asked about pricing for 40 seats. She would like a demo of the SLA and reporting features before deciding, and asked for someone from sales to call her back this week.',
-  },
-  {
-    id: 'voice-support-02-mine-0',
-    direction: 'Inbound',
-    inbox: 'Voice Support 02',
-    view: 'Mine',
-    name: 'Marcus Lee',
-    phone: '+1 (555) 012-4478',
-    date: 'Mar 12',
-    time: 'Mar 12, 10:05 AM',
-    status: 'ongoing',
-    connectedSeconds: 95,
-    summary: 'Marcus called about an unexpected charge on his card after downgrading his plan. I confirmed the downgrade took effect at the end of the billing cycle, so the charge was for the last month on the old plan. He accepted the explanation and asked for a copy of the invoice by email.',
-  },
-  {
-    id: 'voice-support-02-mine-1',
-    direction: 'Inbound',
-    duration: '6m 05s',
-    inbox: 'Voice Support 02',
-    view: 'Mine',
-    name: 'Sofia Reyes',
-    phone: '+1 (555) 016-3302',
-    date: 'Mar 11',
-    time: 'Mar 11, 02:40 PM',
-    status: 'ended',
-    summary: "Sofia's card was declined at renewal and her account was paused. I helped her update the payment method and retried the charge, which went through. The account is active again and she received the payment receipt.",
-  },
-  {
-    id: 'voice-support-02-unassigned-0',
-    direction: 'Inbound',
-    duration: '1m 47s',
-    inbox: 'Voice Support 02',
-    view: 'Unassigned',
-    name: null, // number only: the caller has no saved name
-    phone: '+44 20 7946 0958',
-    date: 'Mar 10',
-    time: 'Mar 10, 06:12 PM',
-    status: 'ended',
-    summary: 'The caller asked whether annual plans can be refunded when cancelled partway through the year. They did not share an account email, so I explained the pro-rated refund policy and asked them to reply from their account email to start the request.',
   },
 ];
 

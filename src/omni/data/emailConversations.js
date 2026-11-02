@@ -4,7 +4,7 @@ export const conversationsData = [
   // --- Email: Mine (2) ---
   {
     id: 1,
-    inbox: 'Email Support 01',
+    inbox: 'Customer Support',
     type: 'Mine',
     sender: 'John Smith',
     initial: 'J',
@@ -46,7 +46,7 @@ export const conversationsData = [
   {
     id: 2,
     ticketId: 'TKT#3', // a ticket: email conversation with the ticket right panel
-    inbox: 'Email Support 01',
+    inbox: 'Customer Support',
     type: 'Mine',
     sender: 'Alice Johnson',
     initial: 'A',
@@ -80,7 +80,7 @@ export const conversationsData = [
   // --- Email: Unassigned (2) ---
   {
     id: 4,
-    inbox: 'Email Support 01',
+    inbox: 'Customer Support',
     type: 'Unassigned',
     sender: 'Emily Watson',
     initial: 'E',
@@ -113,7 +113,7 @@ export const conversationsData = [
   {
     id: 5,
     ticketId: 'TKT#7', // a ticket: email conversation with the ticket right panel
-    inbox: 'Email Support 01',
+    inbox: 'Customer Support',
     type: 'Unassigned',
     sender: 'David Chen',
     initial: 'D',
@@ -153,145 +153,11 @@ export const conversationsData = [
     ]
   },
 
-  // --- Email Support 02: Mine (2) ---
-  {
-    id: 21,
-    inbox: 'Email Support 02',
-    type: 'Mine',
-    sender: 'George Baker',
-    initial: 'G',
-    avatarColor: 'var(--pastelVioletTextBody)',
-    time: 'Feb 4, 10:20 AM',
-    subject: 'Double charge refund',
-    preview: 'I see a duplicate charge on my statement.',
-    threadCount: 2,
-    messages: [
-      {
-        id: 'm1',
-        sender: 'George Baker',
-        email: 'george@baker.com',
-        time: 'Feb 4, 09:00 AM',
-        initial: 'G',
-        avatarColor: 'var(--pastelVioletTextBody)',
-        body: 'Hello,\n\nI was charged twice for my subscription this month. Can you please refund the second one?'
-      },
-      {
-        id: 'm2',
-        sender: 'Ruben Geidt',
-        email: 'ruben@acme.com',
-        time: 'Feb 4, 10:20 AM',
-        initial: 'R',
-        avatarColor: 'var(--pastelLightBlueBorderDefault)',
-        body: 'Hi George,\n\nI\'ve processed the refund for the duplicate charge. It should reach your account in 3-5 days.'
-      }
-    ]
-  },
-  {
-    id: 22,
-    ticketId: 'TKT#12', // a ticket: email conversation with the ticket right panel
-    inbox: 'Email Support 02',
-    type: 'Mine',
-    sender: 'Emma Stone',
-    initial: 'E',
-    avatarColor: 'var(--pastelPurpleTextBody)',
-    time: 'Feb 3, 04:15 PM',
-    subject: 'Return shipping refund',
-    preview: 'Can I get a refund for the return labels?',
-    threadCount: 2,
-    messages: [
-      {
-        id: 'm1',
-        sender: 'Emma Stone',
-        email: 'emma@stone.com',
-        time: 'Feb 3, 02:00 PM',
-        initial: 'E',
-        avatarColor: 'var(--pastelPurpleTextBody)',
-        body: 'Hi,\n\nI had to pay for return shipping because the item was faulty. Can this be reimbursed?'
-      },
-      {
-        id: 'm2',
-        sender: 'Ruben Geidt',
-        email: 'ruben@acme.com',
-        time: 'Feb 3, 04:15 PM',
-        initial: 'R',
-        avatarColor: 'var(--pastelLightBlueBorderDefault)',
-        body: 'Yes Emma. Please upload the receipt and I will issue a credit to your account.'
-      }
-    ]
-  },
-
-  // --- Email Support 02: Unassigned (2) ---
-  {
-    id: 23,
-    inbox: 'Email Support 02',
-    type: 'Unassigned',
-    sender: 'Customer Care',
-    initial: 'C',
-    avatarColor: 'var(--pastelGreenBorderDefault)',
-    time: 'Feb 4, 11:00 AM',
-    subject: 'Escalated refund request',
-    preview: 'Customer is unhappy with the product.',
-    threadCount: 2,
-    messages: [
-      {
-        id: 'm1',
-        sender: 'Customer Care',
-        email: 'care@acme.com',
-        time: 'Feb 4, 08:30 AM',
-        initial: 'C',
-        avatarColor: 'var(--pastelGreenBorderDefault)',
-        body: 'Team,\n\nCustomer #9928 wants a full refund. They say the item doesn\'t match the description. Please review.'
-      },
-      {
-        id: 'm2',
-        sender: 'Refund Bot',
-        email: 'refunds@acme.com',
-        time: 'Feb 4, 08:35 AM',
-        initial: 'R',
-        avatarColor: '#94a3b8',
-        body: 'Request received. Analyzing product return history.'
-      }
-    ]
-  },
-  {
-    id: 24,
-    ticketId: 'TKT#15', // a ticket: email conversation with the ticket right panel
-    inbox: 'Email Support 02',
-    type: 'Unassigned',
-    sender: 'Liam Neeson',
-    initial: 'L',
-    avatarColor: 'var(--pastelLightBlueTextBody)',
-    time: 'Feb 4, 03:20 PM',
-    subject: 'Membership cancellation refund',
-    preview: 'I want a pro-rated refund for my annual plan.',
-    threadCount: 2,
-    messages: [
-      {
-        id: 'm1',
-        sender: 'Liam Neeson',
-        email: 'liam@neeson.com',
-        time: 'Feb 4, 01:00 PM',
-        initial: 'L',
-        avatarColor: 'var(--pastelLightBlueTextBody)',
-        body: 'Hi,\n\nI am cancelling my service halfway through the year. I\'d like a refund for the remaining 6 months.'
-      },
-      {
-        id: 'm2',
-        sender: 'System Bot',
-        email: 'support@acme.com',
-        time: 'Feb 4, 01:05 PM',
-        initial: 'S',
-        avatarColor: '#94a3b8',
-        body: 'Your cancellation and refund request has been logged.'
-      }
-    ]
-  },
-
   // --- More tickets: 3 per Email inbox ---
   {
     id: 31,
     ticketId: 'TKT#18', // a ticket: email conversation with the ticket right panel
-    inbox: "Email Support 01",
+    inbox: "Customer Support",
     type: "Mine",
     sender: "Nina Patel",
     initial: "N",
@@ -324,7 +190,7 @@ export const conversationsData = [
   {
     id: 32,
     ticketId: 'TKT#21', // a ticket: email conversation with the ticket right panel
-    inbox: "Email Support 01",
+    inbox: "Customer Support",
     type: "Mine",
     sender: "Omar Haddad",
     initial: "O",
@@ -357,7 +223,7 @@ export const conversationsData = [
   {
     id: 33,
     ticketId: 'TKT#24', // a ticket: email conversation with the ticket right panel
-    inbox: "Email Support 01",
+    inbox: "Customer Support",
     type: "Unassigned",
     sender: "Clara Jensen",
     initial: "C",
@@ -375,96 +241,6 @@ export const conversationsData = [
         initial: "C",
         avatarColor: "var(--pastelVioletBorderDefault)",
         body: "Hi,\n\nOur analytics dashboard takes more than a minute to load every morning. It was fast last week. Can you take a look?"
-      }
-    ]
-  },
-  {
-    id: 34,
-    ticketId: 'TKT#27', // a ticket: email conversation with the ticket right panel
-    inbox: "Email Support 02",
-    type: "Mine",
-    sender: "Hugo Martins",
-    initial: "H",
-    avatarColor: "var(--pastelPurpleBorderDefault)",
-    time: "Feb 4, 02:30 PM",
-    subject: "Invoice address is wrong",
-    preview: "Our invoices still show our old office address.",
-    threadCount: 2,
-    messages: [
-      {
-        id: 'm1',
-        sender: "Hugo Martins",
-        email: "hugo@martinsco.com",
-        time: "Feb 4, 02:30 PM",
-        initial: "H",
-        avatarColor: "var(--pastelPurpleBorderDefault)",
-        body: "Hello,\n\nOur last three invoices still show our old office address. We updated it in settings in January. Can you reissue them?"
-      },
-      {
-        id: 'm2',
-        sender: "Ruben Geidt",
-        email: "ruben@acme.com",
-        time: "Feb 4, 02:30 PM",
-        initial: "R",
-        avatarColor: "var(--pastelLightBlueBorderDefault)",
-        body: "Hi Hugo,\n\nI have corrected the billing address and reissued the three invoices. You should have them in your inbox now."
-      }
-    ]
-  },
-  {
-    id: 35,
-    ticketId: 'TKT#30', // a ticket: email conversation with the ticket right panel
-    inbox: "Email Support 02",
-    type: "Mine",
-    sender: "Priya Raman",
-    initial: "P",
-    avatarColor: "var(--pastelRedBorderDefault)",
-    time: "Feb 3, 01:15 PM",
-    subject: "Charged after cancelling",
-    preview: "I cancelled last month but was charged again.",
-    threadCount: 2,
-    messages: [
-      {
-        id: 'm1',
-        sender: "Priya Raman",
-        email: "priya.raman@corvid.ai",
-        time: "Feb 3, 01:15 PM",
-        initial: "P",
-        avatarColor: "var(--pastelRedBorderDefault)",
-        body: "Hi,\n\nI cancelled our subscription on January 12, but we were charged again on February 1. Please refund this charge."
-      },
-      {
-        id: 'm2',
-        sender: "Ruben Geidt",
-        email: "ruben@acme.com",
-        time: "Feb 3, 01:15 PM",
-        initial: "R",
-        avatarColor: "var(--pastelLightBlueBorderDefault)",
-        body: "Hi Priya,\n\nYou are right, the cancellation did not go through. I have refunded the February charge and closed the subscription."
-      }
-    ]
-  },
-  {
-    id: 36,
-    ticketId: 'TKT#33', // a ticket: email conversation with the ticket right panel
-    inbox: "Email Support 02",
-    type: "Unassigned",
-    sender: "Sam Okoro",
-    initial: "S",
-    avatarColor: "var(--pastelLightBlueBorderDefault)",
-    time: "Feb 4, 11:48 AM",
-    subject: "Need a VAT invoice",
-    preview: "We need invoices with our VAT number on them.",
-    threadCount: 1,
-    messages: [
-      {
-        id: 'm1',
-        sender: "Sam Okoro",
-        email: "sam.okoro@tidewater.org",
-        time: "Feb 4, 11:48 AM",
-        initial: "S",
-        avatarColor: "var(--pastelLightBlueBorderDefault)",
-        body: "Hello,\n\nOur finance team needs invoices that include our VAT number. Could you add it to our account and resend January's invoice?"
       }
     ]
   }

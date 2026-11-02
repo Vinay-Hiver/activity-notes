@@ -2,6 +2,8 @@ import { useId, useRef, useState } from 'react'
 import { Avatar } from '../../components/Avatar'
 import { Dropdown } from '../../components/Dropdown'
 import { Popover } from '../../components/Popover'
+import { Tag } from '../../components/Tag'
+import type { ChipColor } from '../../components/Tag'
 import { Icon } from '../../icons/Icon'
 import type { IconName } from '../../icons/iconData'
 import { sampleAssignees, statusOptions } from './data/options'
@@ -94,5 +96,49 @@ export function StatusField({ value, onChange }: StatusFieldProps) {
         onChange={(v) => { const next = v as 'open' | 'pending' | 'closed'; setInner(next); onChange?.(next); setOpen(false) }}
       />
     </SelectValue>
+  )
+}
+
+export type TagOption = { value: string; label: string; color?: ChipColor }
+
+export type TagsFieldProps = {
+  /** Every tag that can be added. */
+  options: TagOption[]
+  /** The values of the tags on the conversation. */
+  value: string[]
+  onChange: (value: string[]) => void
+}
+
+/**
+ * The Tags field: the conversation's tags (each removable) and an "Add" chip. "Add" opens a searchable
+ * checkbox list of every tag; ticking and unticking only takes effect on Apply.
+ */
+export function TagsField({ options, value, onChange }: TagsFieldProps) {
+  const ref = useRef<HTMLButtonElement>(null)
+  const [open, setOpen] = useState(false)
+  const [draft, setDraft] = useState<string[]>(value)
+  const openList = () => { setDraft(value); setOpen(true) }
+  const tags = value.map((v) => options.find((o) => o.value === v)).filter((o): o is TagOption => !!o)
+  return (
+    <div className="hot-rp-field hot-rp-field--tags">
+      <div className="hot-rp-field__label"><Icon name="tag" size={14} /><span>Tags</span></div>
+      <div className="hot-rp-field__value hot-rp-tags">
+        {tags.map((t) => (
+          <Tag key={t.value} color={t.color} onRemove={() => onChange(value.filter((v) => v !== t.value))} removeLabel={`Remove ${t.label}`}>{t.label}</Tag>
+        ))}
+        {/* Temporary, as in the storybook: a clickable "Add" chip is not built, so a Tag sits inside a plain button. */}
+        <button ref={ref} type="button" aria-label="Add tag" aria-expanded={open} className="hot-rp-tags__add" onClick={() => (open ? setOpen(false) : openList())}>
+          <Tag iconLeft={<Icon name="add" size={14} />}>Add</Tag>
+        </button>
+        <Popover open={open} onClose={() => setOpen(false)} anchorRef={ref} placement="bottom-end">
+          <Dropdown
+            variant="checkbox" searchable searchPlaceholder="Search Tags" value={draft}
+            options={options.map((o) => ({ value: o.value, label: o.label }))}
+            onChange={(v) => setDraft(v as string[])}
+            actions={{ onCancel: () => setOpen(false), onApply: () => { onChange(draft); setOpen(false) } }}
+          />
+        </Popover>
+      </div>
+    </div>
   )
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import './VoiceCallView.css';
 import SkeletonText from './SkeletonText';
 import VoicePlayer from './VoicePlayer';
-import LinkedRightPanel from '../link/LinkedRightPanel';
+import ConversationRightPanel from '../ConversationRightPanel';
 import { SAMPLE_TRANSCRIPT, VOICE_CALLS, callerLabel } from '../../data/voiceCalls';
 
 // Icons (from omni-voice-channel)
@@ -95,7 +95,7 @@ export default function VoiceCallView({ inboxName, viewType = 'Mine' }) {
       )}
 
       {/* 3. Right Panel (storybook). The storybook has no Voice panel yet, so Voice uses the SMS one. */}
-      <LinkedRightPanel channel="sms" inboxName={inboxName} unassigned={viewType === 'Unassigned'} conversationId={call?.id} />
+      <ConversationRightPanel channel="sms" inboxName={inboxName} unassigned={viewType === 'Unassigned'} conversationId={call?.id} />
     </div>
   );
 }

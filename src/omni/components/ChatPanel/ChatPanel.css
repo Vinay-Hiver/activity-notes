@@ -1,4 +1,7 @@
 .chat-panel {
+  /* Side padding that keeps the thread and composer in a centred column of at most 900px
+     (its 20px inner padding included). Percentages are of the panel's width. */
+  --chat-column-pad: max(20px, calc((100% - 900px) / 2 + 20px));
   display: flex;
   flex-direction: column;
   flex: 1 1 0;
@@ -49,7 +52,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 20px;
+  padding: 20px var(--chat-column-pad);
 }
 
 .chat-message {
@@ -88,10 +91,9 @@
   padding: 8px 12px;
 }
 
-/* Chat and SMS: agent (outgoing) messages use the Send button's
-   enabled colour with white text. */
-.chat-panel--chat .chat-bubble--outgoing-card,
-.chat-panel--sms .chat-bubble--outgoing-card {
+/* Chat: agent (outgoing) messages use the Send button's enabled colour with white text.
+   SMS keeps the WhatsApp look: a white card with a border. */
+.chat-panel--chat .chat-bubble--outgoing-card {
   background: var(--primarySurfaceDefault);
   border-color: var(--primarySurfaceDefault);
   color: var(--slateSurfaceWhite);
@@ -101,7 +103,7 @@
   background: var(--slateSurfaceWhite);
   border: 1px solid var(--slateBorderLight);
   border-radius: 8px;
-  padding: 12px;
+  padding: 8px 12px;
   box-shadow: 0 0 2px rgba(7, 26, 46, 0.04);
 }
 
@@ -195,7 +197,7 @@
 .chat-panel__composer-wrap {
   position: relative;
   flex-shrink: 0;
-  padding: 20px;
+  padding: 20px var(--chat-column-pad);
 }
 
 .chat-composer {

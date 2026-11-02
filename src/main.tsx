@@ -8,24 +8,21 @@ import './index.css'
 import './omni/index.css'
 import App from './omni/App.jsx'
 import { CurrentUserProvider } from './omni/CurrentUser.jsx'
-import { LinkedConversationsProvider } from './omni/LinkedConversations.jsx'
 import { ConversationFieldsProvider } from './omni/ConversationFields.jsx'
-import { ConversationViewerProvider } from './omni/components/viewer/ConversationViewer.jsx'
+import { EmailNotesProvider } from './omni/EmailNotesStore.jsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      {/* Links are shared by everyone, so they sit outside the per-user view (which resets on switch). */}
-      <LinkedConversationsProvider>
-        <ConversationFieldsProvider>
+      {/* Conversation fields and notes are shared by everyone, so they sit outside the per-user view (which resets on switch). */}
+      <ConversationFieldsProvider>
+        <EmailNotesProvider>
           <CurrentUserProvider>
-            <ConversationViewerProvider>
-              <App />
-            </ConversationViewerProvider>
+            <App />
           </CurrentUserProvider>
-        </ConversationFieldsProvider>
-      </LinkedConversationsProvider>
+        </EmailNotesProvider>
+      </ConversationFieldsProvider>
     </BrowserRouter>
-    {import.meta.env.DEV && <Agentation appName="Linked Conversations" />}
+    {import.meta.env.DEV && <Agentation appName="Activity and Notes" />}
   </StrictMode>,
 )

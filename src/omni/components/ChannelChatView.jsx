@@ -3,7 +3,7 @@ import ConversationList from './ChannelConversationList/ConversationList';
 import SlackConversationList from './SlackConversationList/SlackConversationList';
 import ChatPanel from './ChatPanel/ChatPanel';
 import SlackChatPanel from './SlackChatPanel/SlackChatPanel';
-import LinkedRightPanel from './link/LinkedRightPanel';
+import ConversationRightPanel from './ConversationRightPanel';
 import { CHANNEL_BY_INBOX, CHANNEL_CHATS } from '../data/channelChats';
 
 /**
@@ -46,7 +46,7 @@ export default function ChannelChatView({ inboxName, viewType = 'Mine' }) {
         <ChatPanel key={selectedId} channel={channel} conversation={conversation} />
       )}
 
-      <LinkedRightPanel channel={channel} inboxName={inboxName} unassigned={viewType === 'Unassigned'} conversationId={conversation?.id} />
+      <ConversationRightPanel channel={channel} inboxName={inboxName} unassigned={viewType === 'Unassigned'} conversationId={conversation?.id} />
     </>
   );
 }

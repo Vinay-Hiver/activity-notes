@@ -198,6 +198,11 @@
 }
 
 .active-call-page .call-card-large {
+  /* At most 900px wide, centred */
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 900px;
+  align-self: center;
   background-color: white;
   border: 1px solid var(--slateBorderMild, #edf1f6);
   border-radius: 8px;
