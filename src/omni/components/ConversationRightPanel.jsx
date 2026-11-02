@@ -53,7 +53,7 @@ export default function ConversationRightPanel({ conversationId, ...panelProps }
   const changeCustomField = (fieldId, value) => {
     setCustomField(id, fieldId, value);
     const label = CUSTOM_FIELDS.find((f) => f.id === fieldId)?.label ?? fieldId;
-    log('field', { icon: 'edit', verb: value ? `updated ${label} to ${value}` : `cleared ${label}` });
+    log('field', { icon: 'text', verb: value ? `updated ${label} to ${value}` : `cleared ${label}` });
   };
 
   return (
