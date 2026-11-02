@@ -5,7 +5,8 @@ import { Modal, ModalText } from '../../../components/Modal';
 import { Tooltip } from '../../../components/Tooltip';
 import { Icon } from '../../../icons/Icon';
 import { EyeOff } from '../../../icons/EyeOff';
-import { AtSign } from '../../../icons/AtSign';
+// The Mention icon from Figma (Activity - Notes › 21:5693), used as it is.
+import mentionIcon from '../../assets/icons/mention.svg';
 import { USERS, useCurrentUser } from '../../CurrentUser';
 import { useModalExit } from '../modalMotion';
 import { downloadAsZip } from '../../utils/zip';
@@ -523,7 +524,7 @@ export function NoteComposer({ editing, replyTo, onSubmit, onCancel, onQuoteClic
             <Icon name="attachment" size={16} />
           </IconBtn>
           <IconBtn aria-label="Mention" aria-haspopup="listbox" aria-expanded={mentions.open} className={`en-icon-btn--tool${mentions.open ? ' is-active' : ''}`} onMouseDown={(e) => e.preventDefault()} onClick={mentions.openPicker}>
-            <AtSign size={16} />
+            <img src={mentionIcon} alt="" />
           </IconBtn>
           <IconBtn aria-label="Emoji" className="en-icon-btn--tool"><Icon name="emoji" size={16} /></IconBtn>
           <span className="en-composer__spacer" />

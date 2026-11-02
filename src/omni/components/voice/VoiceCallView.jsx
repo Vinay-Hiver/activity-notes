@@ -4,7 +4,10 @@ import SkeletonText from './SkeletonText';
 import VoicePlayer from './VoicePlayer';
 import ConversationRightPanel from '../ConversationRightPanel';
 import { SAMPLE_TRANSCRIPT, VOICE_CALLS, callerLabel } from '../../data/voiceCalls';
-import { ActivityGroup } from '../notes/EmailNotes';
+import { ActivityGroup, NoteComposer } from '../notes/EmailNotes';
+import { useNotesThread } from '../notes/useNotesThread';
+// The Note icon from Figma (Activity - Notes › 12:24260), used as it is.
+import noteIcon from '../../assets/icons/note.svg';
 import { groupActivity, seedActivity } from '../notes/threadTimeline';
 import { useConversationFields } from '../../ConversationFields';
 
@@ -104,16 +107,24 @@ export default function VoiceCallView({ inboxName, viewType = 'Mine' }) {
 }
 
 /**
- * The call's activity under its card, as in the other channels: the assignment after the call came in,
- * then changes made in the right panel, grouped into one summary line when there is more than one.
+ * What follows the call, under its card, as in the other channels: the assignment after the call came in,
+ * then notes and right-panel changes in the order they happened. Activity between two notes is one group.
  */
-function CallActivity({ call }) {
+function CallTimeline({ call, notes, scrollRef }) {
   const { activityOf } = useConversationFields();
-  const rows = [...seedActivity({ id: call.id, firstTime: call.time }).first, ...activityOf(call.id)];
-  const groups = groupActivity(rows.map((row) => ({ kind: 'activity', row })));
+  const later = [
+    ...notes.notes.map((note) => ({ kind: 'note', at: note.at ?? 0, note })),
+    ...activityOf(call.id).map((row) => ({ kind: 'activity', at: row.at, row })),
+  ].sort((a, b) => a.at - b.at);
+  const items = groupActivity([
+    ...seedActivity({ id: call.id, firstTime: call.time }).first.map((row) => ({ kind: 'activity', row })),
+    ...later,
+  ]);
   return (
-    <div className="call-activity">
-      {groups.map((g) => <ActivityGroup key={g.key} rows={g.rows} />)}
+    <div className="call-activity" ref={scrollRef}>
+      {items.map((item) => (item.kind === 'note'
+        ? <div key={item.note.id} className="call-timeline__note">{notes.renderNote(item.note)}</div>
+        : <ActivityGroup key={item.key} rows={item.rows} />))}
     </div>
   );
 }
@@ -122,6 +133,21 @@ export function CallDetail({ call, isEnded, isTranscriptReady, onEndCall }) {
   const [isTranscriptOpen, setIsTranscriptOpen] = React.useState(false);
   const [isExiting, setIsExiting] = React.useState(false);
   const [seconds, setSeconds] = React.useState(call.connectedSeconds || 0);
+  // Notes on the call (email-style cards and composer, shared by Michael and Jim).
+  // `composer` is null (the Add note strip shows), { mode: 'new' }, or { mode: 'reply' | 'edit', note }.
+  const [composer, setComposer] = React.useState(null);
+  const timelineRef = React.useRef(null);
+  const notes = useNotesThread(call.id, {
+    scrollRef: timelineRef,
+    onReply: (note) => setComposer({ mode: 'reply', note }),
+    onEdit: (note) => setComposer({ mode: 'edit', note }),
+  });
+  const submitNote = ({ body, attachments }) => {
+    if (composer.mode === 'edit') notes.edit(composer.note.id, body, attachments);
+    else notes.add({ body, attachments, replyTo: composer.mode === 'reply' ? composer.note : null });
+    setComposer(null);
+    requestAnimationFrame(() => { const el = timelineRef.current; if (el) el.scrollTop = el.scrollHeight; });
+  };
 
   // The connected timer ticks while the call is ongoing.
   React.useEffect(() => {
@@ -147,6 +173,8 @@ export function CallDetail({ call, isEnded, isTranscriptReady, onEndCall }) {
       </div>
 
       <div className="detail-content-area">
+        {/* A pinned note sits above the call card (the conversation's first card), as in the other channels. */}
+        {notes.pinned && <div className="call-pinned">{notes.pinned}</div>}
         <div className={`call-card-large ${isTranscriptOpen ? 'transcript-open' : ''}`}>
           <div className="card-header-info">
             <div className="header-contact">
@@ -275,8 +303,25 @@ export function CallDetail({ call, isEnded, isTranscriptReady, onEndCall }) {
             </div>
           )}
         </div>
-        <CallActivity call={call} />
+        <CallTimeline call={call} notes={notes} scrollRef={timelineRef} />
       </div>
+
+      {/* The email thread's bottom strip, with Add note only (a call has no Reply). */}
+      {composer ? (
+        <NoteComposer
+          key={`${composer.mode}-${composer.note?.id ?? 'new'}`}
+          editing={composer.mode === 'edit' ? composer.note : undefined}
+          replyTo={composer.mode === 'reply' ? composer.note : undefined}
+          onQuoteClick={() => composer.note && notes.scrollToNote(composer.note.id)}
+          onSubmit={submitNote}
+          onCancel={() => setComposer(null)}
+        />
+      ) : (
+        <div className="en-footer">
+          <button type="button" className="en-footer__btn" onClick={() => setComposer({ mode: 'new' })}><img src={noteIcon} alt="" />Add note</button>
+        </div>
+      )}
+      {notes.dialogs}
     </div>
   );
 }

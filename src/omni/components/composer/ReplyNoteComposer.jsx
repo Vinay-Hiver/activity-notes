@@ -2,6 +2,10 @@ import React from 'react';
 import { Dropdown } from '../../../components/Dropdown';
 import { Popover } from '../../../components/Popover';
 import { Icon } from '../../../icons/Icon';
+// The Mention icon from Figma (Activity - Notes › 21:5693), used as it is.
+import mentionIcon from '../../assets/icons/mention.svg';
+// The Note icon from Figma (Activity - Notes › 12:24260), used as it is.
+import noteIcon from '../../assets/icons/note.svg';
 import { AttachmentChip, MentionHighlight, NoteQuote, toAttachments, useMentions } from '../notes/EmailNotes';
 import './ReplyNoteComposer.css';
 
@@ -11,7 +15,7 @@ import './ReplyNoteComposer.css';
 // Tools are 14px icons: Reply has Attach and Emoji, Notes has Attach, Mention and Emoji.
 
 const MODE_OPTIONS = [
-  { value: 'note', label: 'Notes', icon: 'note' },
+  { value: 'note', label: 'Notes', leading: <span className="hot-list-el hot-list-icon"><img src={noteIcon} alt="" /></span> },
   { value: 'reply', label: 'Reply', icon: 'reply' },
 ];
 
@@ -177,7 +181,7 @@ export default function ReplyNoteComposer({ mode, onModeChange, value, onValueCh
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={mentions.openPicker}
                 >
-                  <Icon name="alias" size={14} />
+                  <img src={mentionIcon} alt="" />
                 </button>
               )}
               <EmojiButton onSelect={(emoji) => onValueChange(value + emoji)} />

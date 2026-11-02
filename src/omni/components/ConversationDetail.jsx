@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './ConversationDetail.css';
 import ReplySection from './ReplySection';
+// The Note icon from Figma (Activity - Notes › 12:24260), used as it is.
+import noteIcon from '../assets/icons/note.svg';
 import { Icon } from '../../icons/Icon';
 import { useCurrentUser } from '../CurrentUser';
 import { useEmailNotes } from '../EmailNotesStore';
@@ -335,7 +337,7 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
       ) : (
         <div className="en-footer">
           <button type="button" className="en-footer__btn" onClick={(e) => handleReplyAll(e, conversation.messages[lastIndex]?.id)}><Icon name="reply" size={16} />Reply</button>
-          <button type="button" className="en-footer__btn" onClick={() => openComposer({ mode: 'new' })}><Icon name="note" size={16} />Add note</button>
+          <button type="button" className="en-footer__btn" onClick={() => openComposer({ mode: 'new' })}><img src={noteIcon} alt="" />Add note</button>
         </div>
       )}
 

@@ -599,5 +599,10 @@
   border: none;
 }
 
-/* The call's activity, under the card in the same 900px column; it scrolls if it grows long */
-.active-call-page .call-activity { box-sizing: border-box; flex: none; width: 100%; max-width: 900px; max-height: 40%; align-self: center; overflow-y: auto; }
+/* The call's activity and notes, under the card in the same 900px column; they scroll if they grow long */
+.active-call-page .call-activity { box-sizing: border-box; display: flex; flex: none; flex-direction: column; width: 100%; max-width: 900px; max-height: 45%; align-self: center; overflow-y: auto; }
+.active-call-page .call-activity .en-activity { padding-left: 0; padding-right: 0; }
+/* A pinned note, above the call card in the same column, 20px above it */
+.active-call-page .call-pinned { box-sizing: border-box; flex: none; width: 100%; max-width: 900px; margin-bottom: 20px; align-self: center; }
+.active-call-page .call-timeline__note:first-child { padding-top: 20px; }
+.active-call-page .call-timeline__note + .call-timeline__note { padding-top: 8px; }
