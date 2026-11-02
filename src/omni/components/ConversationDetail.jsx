@@ -2,12 +2,10 @@ import React, { useState, useEffect } from 'react';
 import './ConversationDetail.css';
 import ReplySection from './ReplySection';
 import { Icon } from '../../icons/Icon';
-import { Zap } from '../../icons/Zap';
 import { useCurrentUser } from '../CurrentUser';
 import { useEmailNotes } from '../EmailNotesStore';
-import { assigneeName, initialFieldsOf, useConversationFields } from '../ConversationFields';
-import { statusOptions } from '../../patterns/RightPanel/data/options';
-import { TAGS } from '../data/tags';
+import { groupActivity, seedActivity } from './notes/threadTimeline';
+import { useConversationFields } from '../ConversationFields';
 import { ActivityGroup, NoteCard, NoteComposer, NoteConfirm, PinnedNote, formatNoteTime } from './notes/EmailNotes';
 
 // Icons
@@ -33,32 +31,6 @@ const seedNotes = (conversation) => [{
   time: conversation.messages[0]?.time,
   body: "Checked their account: this looks related to last week's billing change. @Jim Halpert can you confirm before we reply?",
 }];
-
-// The conversation's history: rows after the first message and after the last one, built from the
-// values it started with (its first assignee, status and tags), with people from the Assignee list.
-const activityFor = (conversation) => {
-  const first = conversation.messages[0]?.time;
-  const last = conversation.messages[conversation.messages.length - 1]?.time;
-  const start = initialFieldsOf(conversation.id);
-  // People are { id, name }, so the viewer reads themselves as "You" (see activityText).
-  const owner = start.assignee !== 'none' ? { id: start.assignee, name: assigneeName(start.assignee) } : null;
-  // Who tagged it and set its status: its owner, or (while unassigned) the next person in the list.
-  const actor = owner ?? { id: 'abhay', name: assigneeName('abhay') };
-  const statusText = statusOptions.find((o) => o.value === start.status)?.label;
-  const key = `seed-${conversation.id}`;
-  // Each row is one event with a `kind`, so a group of them can be summed up ("2 tags added").
-  return {
-    first: owner
-      ? [{ id: `${key}-assign`, kind: 'assignee', icon: 'user', verb: 'assigned to', object: owner, suffix: 'through auto assignment', time: first }]
-      : [{ id: `${key}-new`, kind: 'created', icon: 'mailbox', text: `New conversation in ${conversation.inbox}`, time: first }],
-    last: [
-      ...start.tags.map((v) => ({ id: `${key}-tag-${v}`, kind: 'tag-add', icon: 'tag', actor, verb: `applied ${TAGS.find((t) => t.value === v)?.label ?? v} tag`, time: last })),
-      { id: `${key}-status`, kind: 'status', icon: 'flag', actor, verb: `changed status to ${statusText}`, time: last },
-      { id: `${key}-sla`, kind: 'sla', icon: <Zap size={14} />, text: 'Default SLA Policy SLA: First response is Overdue.', time: last },
-      { id: `${key}-ai`, kind: 'ai', icon: 'aisummarizer', text: 'Hiver AI updated Topic', time: last },
-    ],
-  };
-};
 
 const releaseFiles = (files) => files?.forEach((f) => URL.revokeObjectURL(f.url));
 
@@ -137,7 +109,6 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
         replyTo: replyTo ? { noteId: replyTo.id, authorId: replyTo.authorId, author: replyTo.author, body: replyTo.body } : undefined,
       };
       updateThread((t) => ({ ...t, notes: [...t.notes, note] }));
-      setOpenNoteIds((o) => ({ ...o, [note.id]: true }));
       scrollToBottom();
     }
     setComposer(null);
@@ -163,7 +134,7 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
 
   const scrollToNote = (id) => {
     if (!findNote(id)) return;
-    setOpenNoteIds((o) => ({ ...o, [id]: true }));
+    setOpenNoteIds((o) => ({ ...o, [`feed-${id}`]: true }));
     window.clearTimeout(highlightTimer.current);
     setHighlightId(id);
     highlightTimer.current = window.setTimeout(() => setHighlightId((cur) => (cur === id ? null : cur)), 1400);
@@ -177,10 +148,11 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
       key={`${copy}-${note.id}`}
       note={note}
       elementId={copy === 'pin' ? `email-note-${note.id}-pin` : `email-note-${note.id}`}
-      expanded={!!openNoteIds[note.id]}
+      // The pinned copy and the note in the thread open and close on their own.
+      expanded={!!openNoteIds[`${copy}-${note.id}`]}
       pinned={thread.pin?.id === note.id}
       highlighted={highlightId === note.id}
-      onToggle={() => setOpenNoteIds((o) => ({ ...o, [note.id]: !o[note.id] }))}
+      onToggle={() => setOpenNoteIds((o) => ({ ...o, [`${copy}-${note.id}`]: !o[`${copy}-${note.id}`] }))}
       onPin={() => togglePin(note.id)}
       onReply={() => openComposer({ mode: 'reply', noteId: note.id })}
       onQuoteClick={note.replyTo ? () => scrollToNote(note.replyTo.noteId) : undefined}
@@ -203,7 +175,11 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
 
   if (!conversation) return <div className="conversation-detail">Select a conversation</div>;
 
-  const activity = activityFor(conversation);
+  const activity = seedActivity({
+    id: conversation.id,
+    firstTime: conversation.messages[0]?.time,
+    lastTime: conversation.messages[conversation.messages.length - 1]?.time,
+  });
   const lastIndex = conversation.messages.length - 1;
   const seedIds = new Set(seedNotes(conversation).map((n) => n.id));
   // New notes and right-panel activity, in the order they happened (all after the last message).
@@ -221,12 +197,7 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
     const items = [];
     if (index === 0) items.push(...asActivity(activity.first), ...thread.notes.filter((n) => seedIds.has(n.id)).map((note) => ({ kind: 'note', note })));
     if (index === lastIndex) items.push(...asActivity(activity.last), ...later);
-    return items.reduce((out, item) => {
-      const prev = out[out.length - 1];
-      if (item.kind === 'activity' && prev?.kind === 'activity') prev.rows.push(item.row);
-      else out.push(item.kind === 'activity' ? { kind: 'activity', key: item.row.id, rows: [item.row] } : item);
-      return out;
-    }, []);
+    return groupActivity(items);
   };
   const pinned = thread.pin ? findNote(thread.pin.id) : null;
 

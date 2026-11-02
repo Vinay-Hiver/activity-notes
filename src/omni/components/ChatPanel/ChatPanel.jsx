@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   WhatsAppIcon,
   ChannelGlyph,
@@ -10,12 +10,15 @@ import {
   WhatsAppTemplateIcon,
 } from '../icons/Icon';
 import whatsappTemplateUrl from '../../icons/whatsapp-template.svg';
-import emojiIconUrl from '../../icons/emoji.svg';
-import attachFileUrl from '../../icons/attach-file.svg';
-import whatsappTemplatesUrl from '../../icons/whatsapp-templates.svg';
 import TemplateModal from '../TemplateModal/TemplateModal';
 import TemplatePickerPopover from '../TemplateModal/TemplatePickerPopover';
 import TemplatePreviewCard from '../TemplateModal/TemplatePreview';
+import ReplyNoteComposer from '../composer/ReplyNoteComposer';
+import { ActivityGroup } from '../notes/EmailNotes';
+import { useNotesThread } from '../notes/useNotesThread';
+import { groupActivity, seedActivity } from '../notes/threadTimeline';
+import { useConversationFields } from '../../ConversationFields';
+import { useCurrentUser } from '../../CurrentUser';
 import './ChatPanel.css';
 
 // Must match .template-picker-popover's CSS height.
@@ -34,55 +37,6 @@ function StatusTick({ status }) {
   if (status === 'sent') return <SingleTickIcon size={14} />;
   if (status === 'delivered') return <DoubleTickIcon size={14} />;
   return <ReadTickIcon size={14} />;
-}
-
-const EMOJIS = [
-  '😀', '😂', '😊', '😍', '🤔', '😅', '😢', '😮',
-  '👍', '🙏', '👏', '🤝', '🎉', '🔥', '❤️', '💯',
-  '✅', '🚀', '📦', '📍', '⏰', '💬', '😎', '🙌',
-];
-
-function EmojiPickerButton({ onSelect }) {
-  const [open, setOpen] = useState(false);
-  const wrapRef = useRef(null);
-
-  useEffect(() => {
-    if (!open) return undefined;
-    function handleClickOutside(e) {
-      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open]);
-
-  return (
-    <div className="emoji-picker-wrap" ref={wrapRef}>
-      <button
-        type="button"
-        className="chat-composer__tool-btn"
-        onClick={() => setOpen((o) => !o)}
-      >
-        <img src={emojiIconUrl} width={16} height={16} alt="" />
-      </button>
-      {open && (
-        <div className="emoji-picker">
-          {EMOJIS.map((emoji) => (
-            <button
-              key={emoji}
-              type="button"
-              className="emoji-picker__item"
-              onClick={() => {
-                onSelect(emoji);
-                setOpen(false);
-              }}
-            >
-              {emoji}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 }
 
 function IncomingBubble({ text, time }) {
@@ -137,6 +91,12 @@ function TwentyFourHourBlock({ onChooseTemplate }) {
 
 export default function ChatPanel({ channel = 'whatsapp', conversation }) {
   const isWhatsApp = channel === 'whatsapp';
+  // Messages sent here carry the name of whoever is viewing (Michael or Jim).
+  const { user } = useCurrentUser();
+  // Send posts a reply to the customer, or (in Notes mode) an internal note in the thread.
+  const [composerMode, setComposerMode] = useState('reply');
+  // In Notes mode: the note being replied to or edited ({ kind: 'reply' | 'edit', note }).
+  const [composerContext, setComposerContext] = useState(null);
   const baseMessages = conversation?.messages || [];
   const [isBlocked, setIsBlocked] = useState(isWhatsApp && !!conversation?.blocked);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
@@ -149,12 +109,20 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
   const [templatePickerAnchorTop, setTemplatePickerAnchorTop] = useState(0);
   const threadRef = useRef(null);
   const composerWrapRef = useRef(null);
-  const templateButtonRef = useRef(null);
+
+  // Notes (email-style cards, shared by Michael and Jim) and right-panel activity, in the thread.
+  const notes = useNotesThread(conversation?.id, {
+    scrollRef: threadRef,
+    onReply: (note) => { setComposerMode('note'); setComposerContext({ kind: 'reply', note }); setComposerText(''); },
+    onEdit: (note) => { setComposerMode('note'); setComposerContext({ kind: 'edit', note }); setComposerText(note.body); },
+  });
+  const { activityOf } = useConversationFields();
+  const activity = conversation ? activityOf(conversation.id) : [];
 
   useEffect(() => {
     const el = threadRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [dynamicMessages, isBlocked]);
+  }, [dynamicMessages, isBlocked, notes.notes.length, activity.length]);
 
   useEffect(() => {
     if (!isTemplatePickerOpen) return undefined;
@@ -172,6 +140,7 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
     const templateMessage = {
       id: msgId,
       kind: 'template',
+      sender: user.name,
       template,
       values,
       time: formatNow(),
@@ -205,10 +174,17 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
   function handleSendComposerMessage() {
     const text = composerText.trim();
     if (!text) return;
+    if (composerMode === 'note') {
+      if (composerContext?.kind === 'edit') notes.edit(composerContext.note.id, text);
+      else notes.add({ body: text, replyTo: composerContext?.kind === 'reply' ? composerContext.note : null });
+      setComposerContext(null);
+      setComposerText('');
+      return;
+    }
     const msgId = `agent-${Date.now()}`;
     setDynamicMessages((prev) => [
       ...prev,
-      { id: msgId, kind: 'agent-text', text, time: formatNow(), status: 'sent' },
+      { id: msgId, kind: 'agent-text', text, sender: user.name, time: formatNow(), status: 'sent' },
     ]);
     setComposerText('');
 
@@ -235,18 +211,9 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
     }
   }
 
-  function handleComposerKeyDown(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendComposerMessage();
-    }
-  }
-
-  const [openedViaIcon, setOpenedViaIcon] = useState(false);
-
-  function handleComposerChange(e) {
-    const val = e.target.value;
-    if (isWhatsApp && val.startsWith('/') && !isTemplatePickerOpen) {
+  function handleComposerChange(val) {
+    // "/" opens the template picker only while replying, not while writing a note.
+    if (isWhatsApp && composerMode === 'reply' && val.startsWith('/') && !isTemplatePickerOpen) {
       setComposerText(val);
       openTemplatePickerAtComposer();
       return;
@@ -260,7 +227,6 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
   }
 
   function openTemplatePickerAtComposer() {
-    setOpenedViaIcon(false);
     setIsTemplatePickerOpen(true);
     setTemplatePickerKey((key) => key + 1);
     if (composerWrapRef.current) {
@@ -270,23 +236,58 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
     }
   }
 
-  function toggleTemplatePicker() {
-    setIsTemplatePickerOpen((wasOpen) => {
-      if (!wasOpen) {
-        setOpenedViaIcon(true);
-        setTemplatePickerKey((key) => key + 1);
-        if (templateButtonRef.current && composerWrapRef.current) {
-          const btnRect = templateButtonRef.current.getBoundingClientRect();
-          const wrapRect = composerWrapRef.current.getBoundingClientRect();
-          const gap = 8;
-          setTemplatePickerAnchorLeft(btnRect.left - wrapRect.left);
-          setTemplatePickerAnchorTop(btnRect.top - wrapRect.top - gap - TEMPLATE_PICKER_POPOVER_HEIGHT);
-        }
-      } else {
-        setOpenedViaIcon(false);
-      }
-      return !wasOpen;
-    });
+  // The conversation's starting history (as in email), shown after its first and last messages.
+  const seed = conversation ? seedActivity({
+    id: conversation.id,
+    firstTime: baseMessages[0]?.time,
+    lastTime: baseMessages[baseMessages.length - 1]?.time,
+  }) : { first: [], last: [] };
+  // Messages sent here, notes and right-panel activity, in the order they happened (all after the last message).
+  const later = [
+    ...dynamicMessages.map((entry) => ({ kind: 'message', at: Number(entry.id.split('-').pop()), entry })),
+    ...notes.notes.map((note) => ({ kind: 'note', at: note.at ?? 0, note })),
+    ...activity.map((row) => ({ kind: 'activity', at: row.at, row })),
+  ].sort((a, b) => a.at - b.at);
+  const asActivity = (rows) => rows.map((row) => ({ kind: 'activity', row }));
+  // What follows message `i`: activity between two messages or notes is one group, as in email.
+  const threadAfter = (i) => groupActivity([
+    ...(i === 0 ? asActivity(seed.first) : []),
+    ...(i === baseMessages.length - 1 ? [...asActivity(seed.last), ...later] : []),
+  ]);
+
+  function renderMessage(entry) {
+    if (entry.kind === 'template') {
+      return (
+        <div className="chat-message chat-message--outgoing" key={entry.id}>
+          <TemplatePreviewCard template={entry.template} values={entry.values} />
+          <div className="chat-message__meta">
+            <span>{entry.sender} (sent via template)</span>
+            <span className="chat-message__meta-dash">-</span>
+            <span>{entry.time}</span>
+            <StatusTick status={entry.status || 'read'} />
+          </div>
+        </div>
+      );
+    }
+    if (entry.kind === 'agent-text') {
+      return (
+        <OutgoingTextBubble
+          key={entry.id}
+          text={entry.text}
+          time={entry.time}
+          sender={entry.sender}
+          status={entry.status || 'read'}
+          showStatus={isWhatsApp}
+        />
+      );
+    }
+    return <IncomingBubble key={entry.id} text={entry.text} time={entry.time} />;
+  }
+
+  function renderThreadItem(item) {
+    if (item.kind === 'activity') return <div key={item.key} className="chat-thread-item chat-thread-item--activity"><ActivityGroup rows={item.rows} /></div>;
+    if (item.kind === 'note') return <div key={item.note.id} className="chat-thread-item">{notes.renderNote(item.note)}</div>;
+    return renderMessage(item.entry);
   }
 
   return (
@@ -299,48 +300,24 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
       </div>
 
       <div className="chat-panel__thread" ref={threadRef}>
-        {baseMessages.map((m, i) =>
-          m.kind === 'incoming' ? (
-            <IncomingBubble key={`base-${i}`} text={m.text} time={m.time} />
-          ) : (
-            <OutgoingTextBubble
-              key={`base-${i}`}
-              text={m.text}
-              time={m.time}
-              sender={m.sender}
-              status={m.status || 'read'}
-              showStatus={isWhatsApp}
-            />
-          )
-        )}
-        {dynamicMessages.map((entry) => {
-          if (entry.kind === 'template') {
-            return (
-              <div className="chat-message chat-message--outgoing" key={entry.id}>
-                <TemplatePreviewCard template={entry.template} values={entry.values} />
-                <div className="chat-message__meta">
-                  <span>Arnold (sent via template)</span>
-                  <span className="chat-message__meta-dash">-</span>
-                  <span>{entry.time}</span>
-                  <StatusTick status={entry.status || 'read'} />
-                </div>
-              </div>
-            );
-          }
-          if (entry.kind === 'agent-text') {
-            return (
+        {notes.pinned}
+        {baseMessages.map((m, i) => (
+          <React.Fragment key={`base-${i}`}>
+            {m.kind === 'incoming' ? (
+              <IncomingBubble text={m.text} time={m.time} />
+            ) : (
               <OutgoingTextBubble
-                key={entry.id}
-                text={entry.text}
-                time={entry.time}
-                sender="Arnold"
-                status={entry.status || 'read'}
+                text={m.text}
+                time={m.time}
+                sender={m.sender}
+                status={m.status || 'read'}
                 showStatus={isWhatsApp}
               />
-            );
-          }
-          return <IncomingBubble key={entry.id} text={entry.text} time={entry.time} />;
-        })}
+            )}
+            {threadAfter(i).map(renderThreadItem)}
+          </React.Fragment>
+        ))}
+        {baseMessages.length === 0 && groupActivity(later).map(renderThreadItem)}
       </div>
 
       {conversation?.view !== 'Assigned to Bot' && (
@@ -348,48 +325,23 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
           {isBlocked ? (
             <TwentyFourHourBlock onChooseTemplate={openTemplateModal} />
           ) : (
-            <div className="chat-composer">
-              <textarea
-                className="chat-composer__input"
-                placeholder={
-                  isWhatsApp
+            <ReplyNoteComposer
+              mode={composerMode}
+              onModeChange={(next) => { setComposerMode(next); setComposerContext(null); }}
+              placeholder={
+                composerMode === 'note'
+                  ? 'Add an internal note. Type @ to mention a teammate'
+                  : isWhatsApp
                     ? "Shift + Enter for new line. Type ‘/’ to search for WhatsApp templates and send quick replies"
-                    : 'Shift + Enter for new line'
-                }
-                value={composerText}
-                onChange={handleComposerChange}
-                onKeyDown={handleComposerKeyDown}
-              />
-              <div className="chat-composer__toolbar">
-                <div className="chat-composer__tools">
-                  <EmojiPickerButton onSelect={(emoji) => setComposerText((prev) => prev + emoji)} />
-                  <button className="chat-composer__tool-btn" type="button">
-                    <img src={attachFileUrl} width={16} height={16} alt="" />
-                  </button>
-                  {isWhatsApp && (
-                    <button
-                      ref={templateButtonRef}
-                      type="button"
-                      className={
-                        'chat-composer__tool-btn' +
-                        (isTemplatePickerOpen && openedViaIcon ? ' chat-composer__tool-btn--active' : '')
-                      }
-                      onClick={toggleTemplatePicker}
-                    >
-                      <img src={whatsappTemplatesUrl} width={16} height={16} alt="" />
-                    </button>
-                  )}
-                </div>
-                <button
-                  className="chat-composer__send"
-                  type="button"
-                  disabled={!composerText.trim()}
-                  onClick={handleSendComposerMessage}
-                >
-                  Send
-                </button>
-              </div>
-            </div>
+                    : "Shift + Enter for new line. Type ‘/’ to search for chat templates and send quick replies"
+              }
+              value={composerText}
+              onValueChange={handleComposerChange}
+              onSend={handleSendComposerMessage}
+              context={composerContext}
+              onClearContext={() => { if (composerContext?.kind === 'edit') setComposerText(''); setComposerContext(null); }}
+              onQuoteClick={() => composerContext && notes.scrollToNote(composerContext.note.id)}
+            />
           )}
           {isWhatsApp && isTemplatePickerOpen && (
             <TemplatePickerPopover
@@ -402,6 +354,8 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
           )}
         </div>
       )}
+
+      {notes.dialogs}
 
       {isWhatsApp && (
         <TemplateModal

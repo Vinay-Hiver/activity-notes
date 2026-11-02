@@ -32,17 +32,14 @@
 .en-icon-btn:hover, .en-icon-btn.is-active { background: var(--slateSurfaceSubtle100Hover); }
 
 /* ---------- Activity ---------- */
-.en-activity { display: flex; flex-direction: column; gap: 6px; padding: 2px 12px 2px 13px; }
+/* 20px above and below every activity block, a single row or a group */
+.en-activity { display: flex; flex-direction: column; gap: 6px; padding: 20px 12px 20px 13px; }
 .en-activity__row { position: relative; display: flex; align-items: center; gap: 8px; padding: 2px 2px 2px 0; color: var(--slateTextBody); }
 .en-activity__row svg { flex: none; }
-.en-activity__row p, .en-activity__row .en-activity__text { flex: 1; min-width: 0; margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; line-height: 20px; color: var(--slateTextBody); }
+.en-activity__row p { flex: 1; min-width: 0; margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; line-height: 20px; color: var(--slateTextBody); }
 /* The time shows on hover only */
 .en-activity__time { flex: none; font-size: 12px; line-height: 18px; color: var(--slateTextSubtle); white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 120ms ease; }
 .en-activity__row:hover .en-activity__time { opacity: 1; }
-/* The folded line of a group: a button that opens the full list */
-.en-activity__summary { width: 100%; border: 0; background: none; text-align: left; cursor: pointer; font-family: inherit; }
-.en-activity__summary:hover .en-activity__text { color: var(--slateTextTitle); }
-.en-activity__rest { color: var(--primaryBorderDefault); }
 .en-activity__more { align-self: flex-start; padding: 0; border: 0; background: none; cursor: pointer; font-family: inherit; font-size: 13px; line-height: 18px; color: var(--primaryBorderDefault); }
 
 /* ---------- Note card ---------- */
@@ -69,7 +66,6 @@
 .en-note:hover .en-note__actions { display: flex; }
 .en-note__actions .en-icon-btn { width: 20px; height: 20px; border-radius: 4px; }
 .en-note__actions .en-icon-btn:hover { background: var(--slateSurfaceWhite); }
-.en-note__actions .en-icon-btn.is-pinned { background: var(--primarySurfaceSubtle); }
 
 .en-mention { color: var(--primaryBorderDefault); }
 
@@ -128,7 +124,6 @@
 .en-composer__drop.is-active { border-color: var(--primaryBorderDefault); background: var(--primarySurfaceSubtle); color: var(--slateTextBody); }
 .en-file-input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 .en-composer__bar { display: flex; align-items: center; gap: 8px; width: 100%; padding-top: 8px; }
-.en-composer__at { font-size: 16px; font-weight: var(--fontWeightMedium); line-height: 16px; }
 .en-composer__spacer { flex: 1; min-width: 0; }
 
 /* @mention list above the composer */
@@ -144,3 +139,11 @@
 .en-dialog h3 { margin: 0; font-size: 16px; font-weight: var(--fontWeightMedium); line-height: 24px; color: var(--slateTextTitle); }
 .en-dialog p { margin: 8px 0 0; font-size: 14px; line-height: 20px; color: var(--slateTextBody); }
 .en-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+/* In the email thread the items are 16px apart; activity cancels that gap so it sits exactly
+   20px (its own padding) from the message or note above and below. */
+.messages-container > .en-activity { margin-top: -16px; margin-bottom: -16px; }
+.messages-container > .en-activity:last-child { margin-bottom: 0; }
+
+/* A pinned note sits 20px above the first message (the email thread's 16px gap plus 4px) */
+.messages-container > .en-pinned { margin-bottom: 4px; }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { sampleAssignees } from '../patterns/RightPanel/data/options';
+import { AGENTS } from './data/agents';
 import { conversationsData } from './data/emailConversations';
 import { CHANNEL_CHATS } from './data/channelChats';
 import { VOICE_CALLS } from './data/voiceCalls';
@@ -12,7 +12,7 @@ import { defaultCustomFieldsFor } from './data/customFields';
 // Shared by every user (it sits above CurrentUserProvider): these are data, not per-viewer settings.
 //
 // Starting values: Unassigned conversations have no assignee ("none"), everything else belongs to
-// the first person in the list (Michael Scott). Conversations in a Closed view start Closed, the rest Open.
+// the first person in the Assignee list (Michael Scott, see data/agents.js). Conversations in a Closed view start Closed, the rest Open.
 
 const NONE = 'none';
 
@@ -39,11 +39,11 @@ const VIEW_BY_ID = Object.fromEntries([
   ...VOICE_CALLS.map((c) => [String(c.id), c.view]),
 ]);
 
-const defaultAssignee = (id) => (VIEW_BY_ID[String(id)] === 'Unassigned' ? NONE : sampleAssignees[0].value);
+const defaultAssignee = (id) => (VIEW_BY_ID[String(id)] === 'Unassigned' ? NONE : AGENTS[0].value);
 const defaultStatus = (id) => (VIEW_BY_ID[String(id)] === 'Closed' ? 'closed' : 'open');
 
 /** A person's name as the Assignee list shows it, without "(Me)"; undefined for None. */
-export const assigneeName = (value) => sampleAssignees.find((p) => p.value === value)?.label.replace(/ \(Me\)$/, '');
+export const assigneeName = (value) => AGENTS.find((p) => p.value === value)?.label;
 
 /** The values a conversation starts with, before anyone changes them (its history in the thread). */
 export const initialFieldsOf = (id) => ({ assignee: defaultAssignee(id), status: defaultStatus(id), tags: defaultTagsFor(id) });

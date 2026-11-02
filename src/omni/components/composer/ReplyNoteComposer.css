@@ -1,0 +1,140 @@
+/* Real-time channel composer (Figma: Activity - Notes › 21:5631). */
+
+/* Holds the composer and the @mention list that opens above it */
+.rn-composer-wrap { position: relative; width: 100%; }
+.rn-composer-wrap .en-mentions { left: 0; }
+
+.rn-composer {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--slateBorderLight);
+  border-radius: 8px;
+  background: var(--slateSurfaceWhite);
+  font-family: var(--fontFamily);
+}
+
+/* Replying to or editing a note (Notes mode): the quote or "Editing note", and a close button */
+.rn-composer__context { display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px 0; }
+.rn-composer__context .en-quote { flex: 1; padding: 8px; border-radius: 6px; background: var(--slateSurfaceSubtle); }
+.rn-composer__context .en-quote:hover { background: var(--slateSurfaceSubtle100Hover); }
+.rn-composer__context-label { flex: 1; font-size: 12px; font-weight: var(--fontWeightMedium); line-height: 28px; color: var(--slateTextSubtle); }
+
+.rn-composer__field { position: relative; width: 100%; }
+.rn-composer__input,
+.rn-composer__highlight {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100px;
+  padding: 12px 12px 0;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 20px;
+}
+.rn-composer__input {
+  display: block;
+  max-height: 160px;
+  border: 0;
+  outline: 0;
+  resize: none;
+  background: transparent;
+  color: var(--slateTextBody);
+}
+.rn-composer__input::placeholder { color: var(--slateTextDisabled); }
+/* Notes mode: the text box sits over a copy of its text that colours the @mentions */
+.rn-composer__highlight { white-space: pre-wrap; overflow-wrap: anywhere; color: var(--slateTextBody); }
+.rn-composer__field.has-mentions .rn-composer__input { position: absolute; inset: 0; height: 100%; max-height: none; color: transparent; caret-color: var(--slateTextBody); }
+
+.rn-composer__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--slateBorderLight);
+  background: var(--slateSurfaceWhite);
+}
+.rn-composer--note .rn-composer__bar { border-top-color: var(--pastelYellowSurfaceDefault); background: var(--pastelYellowSurfaceSubtle); }
+
+.rn-composer__left { display: flex; align-items: center; gap: 8px; }
+.rn-composer__tools { display: flex; align-items: center; gap: 8px; }
+
+/* Reply / Notes switch */
+.rn-composer__mode {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: var(--fontWeightMedium);
+  line-height: 20px;
+  color: var(--slateTextBody);
+}
+
+/* 28px tool buttons with 14px icons (Attach, Mention, Emoji) */
+.rn-composer__tool {
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 5px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  color: var(--slateTextBody);
+}
+.rn-composer__mode:hover, .rn-composer__mode.is-open,
+.rn-composer__tool:hover, .rn-composer__tool.is-active { background: color-mix(in srgb, var(--slateTextTitle) 6%, transparent); }
+
+.rn-composer__send {
+  box-sizing: border-box;
+  min-width: 56px;
+  height: 34px;
+  padding: 6px 12px;
+  border: 1px solid var(--primaryBorderDefault);
+  border-radius: 6px;
+  background: var(--primaryBorderDefault);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: var(--fontWeightMedium);
+  line-height: 20px;
+  color: var(--slateSurfaceWhite);
+}
+.rn-composer__send:hover:not(:disabled) { background: var(--primarySurfaceMildDark); border-color: var(--primarySurfaceMildDark); }
+/* Disabled until there is text: the caption grey at 60% (as in Figma) */
+.rn-composer__send:disabled { border-color: var(--slateTextCaption); background: var(--slateTextCaption); color: var(--slateSurfaceDark500); opacity: 0.6; cursor: default; }
+
+/* Emoji picker above the Emoji button */
+.rn-emoji { position: relative; }
+.rn-emoji__picker {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(8, 28px);
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--slateBorderLight);
+  border-radius: 8px;
+  background: var(--slateSurfaceWhite);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--slateTextTitle) 16%, transparent);
+}
+.rn-emoji__item { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 0; border-radius: 6px; background: transparent; cursor: pointer; font-size: 16px; }
+.rn-emoji__item:hover { background: var(--slateSurfaceSubtle100Hover); }
+
+/* The Notes / Reply flyout is narrower than the standard 260px dropdown */
+.hot-dropdown.rn-mode-menu { width: 160px; }

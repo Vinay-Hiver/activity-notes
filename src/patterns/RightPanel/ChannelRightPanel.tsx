@@ -9,6 +9,7 @@ import { RightPanel, RightPanelSection, RightPanelTop } from './RightPanel'
 import { ActivityNotes } from './ActivityNotes'
 import { AssigneeField, StatusField, TagsField } from './FieldSelects'
 import type { TagOption } from './FieldSelects'
+import type { Assignee } from './data/options'
 import { customFieldKinds, getChannel, samples } from './data'
 import type { ChannelId, ChannelSample, FieldDef, FieldKind, ResolvedSection } from './data'
 
@@ -129,7 +130,7 @@ const EMAIL_HIDDEN_SECTIONS = ['activity']
 const TICKET_SECTIONS = ['customFields']
 
 /** The storybook right panel for one channel: its tab, top section, sub-sections in order and "Customize widgets". */
-export function ChannelRightPanel({ channel, inboxName, unassigned, conversationId, ticketId, assignee, onAssigneeChange, status, onStatusChange, tagOptions, tags, onTagsChange, customFields, onCustomFieldChange }: {
+export function ChannelRightPanel({ channel, inboxName, unassigned, conversationId, ticketId, assignee, onAssigneeChange, status, onStatusChange, people, tagOptions, tags, onTagsChange, customFields, onCustomFieldChange }: {
   channel: ChannelId
   /** Email only: the conversation is a ticket with this ID, so the panel uses the ticket layout. */
   ticketId?: string
@@ -139,6 +140,8 @@ export function ChannelRightPanel({ channel, inboxName, unassigned, conversation
   /** The conversation's status, when the caller keeps it (one value per conversation). */
   status?: 'open' | 'pending' | 'closed'
   onStatusChange?: (value: 'open' | 'pending' | 'closed') => void
+  /** The people in the Assignee list (the storybook sample people when left out). */
+  people?: Assignee[]
   /** With `tags` and `onTagsChange`: the tags that can be added, so the Tags field can be edited. */
   tagOptions?: TagOption[]
   tags?: string[]
@@ -165,7 +168,7 @@ export function ChannelRightPanel({ channel, inboxName, unassigned, conversation
     <RightPanel key={isTicket ? 'ticket' : channel} aria-label="Details" tabs={def.tabs} customizeWidgets={def.footer.some((f) => f.id === 'customizeWidgets')}>
       <RightPanelTop title={inboxName ?? sample.inboxName}>
         {topFields.map((f) => {
-          if (f.kind === 'assignee') return <AssigneeField key={`${f.id}-${conversationId}-${unassigned}`} value={assignee} onChange={onAssigneeChange} defaultValue={unassigned ? 'none' : undefined} />
+          if (f.kind === 'assignee') return <AssigneeField key={`${f.id}-${conversationId}-${unassigned}`} value={assignee} onChange={onAssigneeChange} defaultValue={unassigned ? 'none' : undefined} people={people} />
           if (f.kind === 'status') return <StatusField key={`${f.id}-${conversationId}`} value={status} onChange={onStatusChange} />
           if (f.id === 'ticketId') return <Row key={f.id} icon="ticket" label={f.label}><span className="hot-rp-ticket-id">{ticketId}</span></Row>
           if (f.kind === 'tags' && tagOptions && tags && onTagsChange) return <TagsField key={`${f.id}-${conversationId}`} options={tagOptions} value={tags} onChange={onTagsChange} />

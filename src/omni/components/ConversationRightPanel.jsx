@@ -5,6 +5,7 @@ import { assigneeName, useConversationFields } from '../ConversationFields';
 import { useCurrentUser } from '../CurrentUser';
 import { TAGS } from '../data/tags';
 import { CUSTOM_FIELDS } from '../data/customFields';
+import { agentOptionsFor } from '../data/agents';
 import { formatNoteTime } from './notes/EmailNotes';
 
 const tagLabel = (value) => TAGS.find((t) => t.value === value)?.label ?? value;
@@ -32,8 +33,8 @@ export default function ConversationRightPanel({ conversationId, ...panelProps }
     setAssignee(id, value);
     const name = assigneeName(value);
     log('assignee', name
-      ? { icon: 'user', verb: 'assigned to', object: { id: value, name } }
-      : { icon: 'user', verb: 'unassigned the conversation' });
+      ? { icon: 'assigned', verb: 'assigned this conversation to', object: { id: value, name } }
+      : { icon: 'assigned', verb: 'unassigned the conversation' });
   };
 
   const changeStatus = (value) => {
@@ -60,6 +61,7 @@ export default function ConversationRightPanel({ conversationId, ...panelProps }
     <ChannelRightPanel
       {...panelProps}
       conversationId={id}
+      people={agentOptionsFor(user.id)}
       assignee={id ? assigneeOf(id) : undefined}
       onAssigneeChange={id ? changeAssignee : undefined}
       status={id ? statusOf(id) : undefined}

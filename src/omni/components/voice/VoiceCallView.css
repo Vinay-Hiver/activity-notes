@@ -4,7 +4,7 @@
   height: 100vh;
   display: flex;
   overflow: hidden;
-  background-color: var(--slateSurfaceSlate150, #edf1f6);
+  background-color: var(--slateSurfaceSubtle); /* the same grey as the Chat, WhatsApp, SMS and Email threads */
 }
 
 .active-call-page /* 1. Left Panel (Call List) */
@@ -190,7 +190,7 @@
 
 .active-call-page .detail-content-area {
   flex: 1;
-  background-color: var(--slateSurfaceSlate150, #edf1f6);
+  background-color: var(--slateSurfaceSubtle); /* the same grey as the Chat, WhatsApp, SMS and Email threads */
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -206,7 +206,6 @@
   background-color: white;
   border: 1px solid var(--slateBorderMild, #edf1f6);
   border-radius: 8px;
-  box-shadow: 0px 2px 2px rgba(7, 26, 46, 0.04);
   padding: 12px 12px 24px 12px;
   display: flex;
   flex-direction: column;
@@ -599,3 +598,6 @@
   background-color: var(--errorSurfaceDisabled, #eb5c5c);
   border: none;
 }
+
+/* The call's activity, under the card in the same 900px column; it scrolls if it grows long */
+.active-call-page .call-activity { box-sizing: border-box; flex: none; width: 100%; max-width: 900px; max-height: 40%; align-self: center; overflow-y: auto; }

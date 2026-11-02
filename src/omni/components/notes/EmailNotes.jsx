@@ -2,6 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { Icon } from '../../../icons/Icon';
 import { EyeOff } from '../../../icons/EyeOff';
+import { AtSign } from '../../../icons/AtSign';
 import { USERS, useCurrentUser } from '../../CurrentUser';
 import { useModalExit } from '../modalMotion';
 import '../modalMotion.css';
@@ -63,8 +64,8 @@ function MentionText({ text }) {
 const stop = (e) => e.stopPropagation();
 
 /**
- * A person as the viewer reads them: "You" (or "you" mid-sentence) for themselves, their name for anyone else.
- * `person` is { id, name }.
+ * A person as the viewer reads them: "You" at the start of a sentence (or "you" mid-sentence) for
+ * themselves, their name for anyone else. `person` is { id, name }.
  */
 export const personLabel = (person, viewerId, { start = false } = {}) => {
   if (person?.id !== viewerId) return person?.name;
@@ -106,8 +107,8 @@ const SUMMARY_BY_KIND = {
 };
 
 /**
- * The folded line for a group, as in Front: the first two kinds of event with their counts, then
- * "+ N more" for the events not counted there. "2 tags added, Status changed + 2 more".
+ * The folded line for a group, as in Front: the first two kinds of event with their counts
+ * ("2 tags added, status changed"), and `rest`, the number of events it doesn't name.
  */
 function summarize(rows) {
   const counts = [];
@@ -127,7 +128,8 @@ function summarize(rows) {
 
 /**
  * The activity between two messages or notes (each icon is a HOT icon name or an element).
- * One event shows as its own row. More fold into a summary line; opening it lists every event, with "See less".
+ * One event shows as its own row. More fold into a summary line with "+ N more" or "See more" under it;
+ * opening it lists every event, with "See less".
  */
 export function ActivityGroup({ rows }) {
   const { user } = useCurrentUser();
@@ -148,14 +150,18 @@ export function ActivityGroup({ rows }) {
       </div>
     );
   }
+  // The summary line, then the link that opens the group under it: "+ N more" for the events the
+  // line doesn't name, or "See more" when it names them all.
   const { lead, rest } = summarize(rows);
   return (
     <div className="en-activity">
-      <button type="button" className="en-activity__row en-activity__summary" aria-expanded={false} onClick={() => setOpen(true)}>
+      <div className="en-activity__row">
         <Icon name="layering" size={14} />
-        {/* A button can't hold a <p>, so the summary text is a span styled the same. */}
-        <span className="en-activity__text">{lead}{rest > 0 && <span className="en-activity__rest"> + {rest} more</span>}</span>
+        <p>{lead}</p>
         <span className="en-activity__time">{rows[rows.length - 1].time}</span>
+      </div>
+      <button type="button" className="en-activity__more" aria-expanded={false} onClick={() => setOpen(true)}>
+        {rest > 0 ? `+${rest} more` : 'See more'}
       </button>
     </div>
   );
@@ -208,7 +214,7 @@ function NoteActions({ pinned, onPin, onReply, onEdit, onDelete }) {
   return (
     <div className="en-note__actions" onClick={stop} onKeyDown={stop}>
       <IconBtn aria-label={pinned ? 'Unpin' : 'Pin to top'} aria-pressed={pinned} title={pinned ? 'Unpin' : 'Pin to top'} className={pinned ? 'is-pinned' : ''} onClick={onPin}>
-        <Icon name="pin" size={14} />
+        <Icon name={pinned ? 'unpin' : 'pin'} size={14} />
       </IconBtn>
       <IconBtn aria-label="Reply" title="Reply" onClick={onReply}><Icon name="reply" size={14} /></IconBtn>
       {/* Edit and Delete only show on your own notes (no handler is passed for anyone else's). */}
@@ -282,6 +288,133 @@ export function PinnedNote({ by, children }) {
   );
 }
 
+/* ---------- @mentions (shared by the email note composer and the real-time channel composer) ---------- */
+
+/**
+ * @mention typing for a text box: typing "@" (or the Mention button) opens a list of people under the
+ * caret's word; arrows move, Enter or Tab inserts "@Name ". `draft` / `setDraft` are the box's text.
+ * Spread `fieldProps` on the textarea, call `handleKey(e)` first in its onKeyDown (true = handled),
+ * and render `menu` inside a positioned wrapper (it sits above the composer).
+ */
+export function useMentions(draft, setDraft) {
+  const [caret, setCaret] = React.useState(draft.length);
+  const [open, setOpen] = React.useState(false);
+  const [index, setIndex] = React.useState(0);
+  const fieldRef = React.useRef(null);
+  const menuRef = React.useRef(null);
+  const skipSync = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!open) return undefined;
+    const onDown = (e) => {
+      if (menuRef.current?.contains(e.target) || e.target === fieldRef.current || e.target.closest?.('[aria-label="Mention"]')) return;
+      setOpen(false);
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [open]);
+
+  const query = getMentionQuery(draft, caret);
+  const matches = MENTION_USERS.filter((u) => {
+    if (!query?.query) return true;
+    const q = query.query.toLowerCase();
+    return u.name.toLowerCase().includes(q) || u.description.toLowerCase().includes(q);
+  });
+
+  const setDraftCaret = (value, next, openMenu = true) => {
+    setDraft(value);
+    setCaret(next);
+    const q = getMentionQuery(value, next);
+    setOpen(openMenu && !!q);
+    if (q) setIndex(0);
+    requestAnimationFrame(() => {
+      const field = fieldRef.current;
+      if (field) { field.focus(); field.setSelectionRange(next, next); }
+      skipSync.current = false;
+    });
+  };
+
+  const sync = (field) => {
+    if (skipSync.current) return;
+    const pos = field.selectionStart ?? field.value.length;
+    setCaret(pos);
+    const q = getMentionQuery(field.value, pos);
+    setOpen(!!q);
+    if (q) setIndex(0);
+  };
+
+  const insert = (person) => {
+    const pos = fieldRef.current?.selectionStart ?? caret;
+    const q = getMentionQuery(draft, pos);
+    const start = q ? q.start : pos;
+    const token = `@${person.insert} `;
+    skipSync.current = true;
+    setDraftCaret(draft.slice(0, start) + token + draft.slice(pos), start + token.length, false);
+  };
+
+  /** The Mention button: starts an "@" at the caret (or reopens the list for one being typed). */
+  const openPicker = () => {
+    const field = fieldRef.current;
+    const pos = field?.selectionStart ?? draft.length;
+    const end = field?.selectionEnd ?? pos;
+    if (getMentionQuery(draft, pos)) { field?.focus(); setOpen(true); setIndex(0); return; }
+    const text = `${pos > 0 && !/\s/.test(draft[pos - 1] ?? '') ? ' ' : ''}@`;
+    setDraftCaret(draft.slice(0, pos) + text + draft.slice(end), pos + text.length);
+  };
+
+  /** Arrow, Enter, Tab and Escape while the list is open. Returns true when it used the key. */
+  const handleKey = (e) => {
+    if (!open || !matches.length) return false;
+    if (e.key === 'Escape') { e.preventDefault(); setOpen(false); return true; }
+    if (e.key === 'ArrowDown') { e.preventDefault(); setIndex((i) => Math.min(i + 1, matches.length - 1)); return true; }
+    if (e.key === 'ArrowUp') { e.preventDefault(); setIndex((i) => Math.max(i - 1, 0)); return true; }
+    if ((e.key === 'Enter' && !e.metaKey && !e.ctrlKey) || e.key === 'Tab') { e.preventDefault(); insert(matches[index] ?? matches[0]); return true; }
+    return false;
+  };
+
+  const fieldProps = {
+    ref: fieldRef,
+    onChange: (e) => { setDraft(e.currentTarget.value); sync(e.currentTarget); },
+    onKeyUp: (e) => sync(e.currentTarget),
+    onClick: (e) => sync(e.currentTarget),
+    'aria-autocomplete': 'list',
+    'aria-expanded': open,
+  };
+
+  const menu = open && matches.length > 0 ? (
+    <div className="en-mentions" role="listbox" aria-label="Mention people" ref={menuRef}>
+      {matches.map((u, i) => (
+        <button
+          key={u.id}
+          type="button"
+          role="option"
+          aria-selected={i === index}
+          className={`en-mentions__item${i === index ? ' is-active' : ''}`}
+          onMouseDown={(e) => e.preventDefault()}
+          onMouseEnter={() => setIndex(i)}
+          onClick={() => insert(u)}
+        >
+          <NoteAvatar initial={u.initial} color={u.color} />
+          <span className="en-mentions__copy">
+            <span className="en-mentions__name">{u.name}</span>
+            <span className="en-mentions__desc">{u.description}</span>
+          </span>
+        </button>
+      ))}
+    </div>
+  ) : null;
+
+  return { fieldRef, fieldProps, handleKey, openPicker, open, menu };
+}
+
+/** The text that colours @mentions under a transparent textarea (see .en-composer__highlight). */
+export const MentionHighlight = ({ text, className }) => (
+  <div className={className} aria-hidden="true">{text ? <MentionText text={text} /> : ' '}</div>
+);
+
+/** The quote of the note being replied to, for a composer. */
+export { NoteQuote };
+
 /* ---------- Composer ---------- */
 
 /**
@@ -291,32 +424,17 @@ export function PinnedNote({ by, children }) {
 export function NoteComposer({ editing, replyTo, onSubmit, onCancel, onQuoteClick }) {
   const { user } = useCurrentUser();
   const [draft, setDraft] = React.useState(editing?.body ?? '');
-  const [caret, setCaret] = React.useState(editing?.body.length ?? 0);
   const [attachments, setAttachments] = React.useState(editing?.attachments ? [...editing.attachments] : []);
-  const [mentionOpen, setMentionOpen] = React.useState(false);
-  const [mentionIndex, setMentionIndex] = React.useState(0);
   const [dropping, setDropping] = React.useState(false);
   const [dropZone, setDropZone] = React.useState(false);
-  const fieldRef = React.useRef(null);
-  const menuRef = React.useRef(null);
-  const skipSync = React.useRef(false);
+  const mentions = useMentions(draft, setDraft);
   const original = React.useMemo(() => new Set((editing?.attachments ?? []).map((f) => f.id)), [editing]);
 
   React.useEffect(() => {
-    const field = fieldRef.current;
+    const field = mentions.fieldRef.current;
     field?.focus();
     if (field) field.setSelectionRange(field.value.length, field.value.length);
   }, []);
-
-  React.useEffect(() => {
-    if (!mentionOpen) return undefined;
-    const onDown = (e) => {
-      if (menuRef.current?.contains(e.target) || e.target === fieldRef.current || e.target.closest?.('[aria-label="Mention"]')) return;
-      setMentionOpen(false);
-    };
-    document.addEventListener('pointerdown', onDown);
-    return () => document.removeEventListener('pointerdown', onDown);
-  }, [mentionOpen]);
 
   // Files added in this composer that were not kept are released when it closes.
   const releaseUnsaved = (keep = []) => attachments.forEach((f) => { if (!original.has(f.id) && !keep.includes(f)) URL.revokeObjectURL(f.url); });
@@ -331,53 +449,6 @@ export function NoteComposer({ editing, replyTo, onSubmit, onCancel, onQuoteClic
     return cur.filter((f) => f.id !== id);
   });
 
-  const query = getMentionQuery(draft, caret);
-  const matches = MENTION_USERS.filter((u) => {
-    if (!query?.query) return true;
-    const q = query.query.toLowerCase();
-    return u.name.toLowerCase().includes(q) || u.description.toLowerCase().includes(q);
-  });
-
-  const setDraftCaret = (value, next, openMenu = true) => {
-    setDraft(value);
-    setCaret(next);
-    const q = getMentionQuery(value, next);
-    setMentionOpen(openMenu && !!q);
-    if (q) setMentionIndex(0);
-    requestAnimationFrame(() => {
-      const field = fieldRef.current;
-      if (field) { field.focus(); field.setSelectionRange(next, next); }
-      skipSync.current = false;
-    });
-  };
-
-  const syncMention = (field) => {
-    if (skipSync.current) return;
-    const pos = field.selectionStart ?? field.value.length;
-    setCaret(pos);
-    const q = getMentionQuery(field.value, pos);
-    setMentionOpen(!!q);
-    if (q) setMentionIndex(0);
-  };
-
-  const insertMention = (user) => {
-    const pos = fieldRef.current?.selectionStart ?? caret;
-    const q = getMentionQuery(draft, pos);
-    const start = q ? q.start : pos;
-    const token = `@${user.insert} `;
-    skipSync.current = true;
-    setDraftCaret(draft.slice(0, start) + token + draft.slice(pos), start + token.length, false);
-  };
-
-  const openMentionPicker = () => {
-    const field = fieldRef.current;
-    const pos = field?.selectionStart ?? draft.length;
-    const end = field?.selectionEnd ?? pos;
-    if (getMentionQuery(draft, pos)) { field?.focus(); setMentionOpen(true); setMentionIndex(0); return; }
-    const insert = `${pos > 0 && !/\s/.test(draft[pos - 1] ?? '') ? ' ' : ''}@`;
-    setDraftCaret(draft.slice(0, pos) + insert + draft.slice(end), pos + insert.length);
-  };
-
   const canSubmit = draft.trim().length > 0 || attachments.length > 0;
   const submit = () => {
     if (!canSubmit) return;
@@ -387,12 +458,7 @@ export function NoteComposer({ editing, replyTo, onSubmit, onCancel, onQuoteClic
   const cancel = () => { releaseUnsaved(); onCancel(); };
 
   const onKeyDown = (e) => {
-    if (mentionOpen && matches.length) {
-      if (e.key === 'Escape') { e.preventDefault(); setMentionOpen(false); return; }
-      if (e.key === 'ArrowDown') { e.preventDefault(); setMentionIndex((i) => Math.min(i + 1, matches.length - 1)); return; }
-      if (e.key === 'ArrowUp') { e.preventDefault(); setMentionIndex((i) => Math.max(i - 1, 0)); return; }
-      if ((e.key === 'Enter' && !e.metaKey && !e.ctrlKey) || e.key === 'Tab') { e.preventDefault(); insertMention(matches[mentionIndex] ?? matches[0]); return; }
-    }
+    if (mentions.handleKey(e)) return;
     if (e.key === 'Escape') { e.preventDefault(); cancel(); return; }
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); submit(); }
   };
@@ -402,28 +468,7 @@ export function NoteComposer({ editing, replyTo, onSubmit, onCancel, onQuoteClic
 
   return (
     <div className="en-composer-wrap">
-      {mentionOpen && matches.length > 0 && (
-        <div className="en-mentions" role="listbox" aria-label="Mention people" ref={menuRef}>
-          {matches.map((u, i) => (
-            <button
-              key={u.id}
-              type="button"
-              role="option"
-              aria-selected={i === mentionIndex}
-              className={`en-mentions__item${i === mentionIndex ? ' is-active' : ''}`}
-              onMouseDown={(e) => e.preventDefault()}
-              onMouseEnter={() => setMentionIndex(i)}
-              onClick={() => insertMention(u)}
-            >
-              <NoteAvatar initial={u.initial} color={u.color} />
-              <span className="en-mentions__copy">
-                <span className="en-mentions__name">{u.name}</span>
-                <span className="en-mentions__desc">{u.description}</span>
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
+      {mentions.menu}
       <form
         className={`en-composer${dropping ? ' is-drop' : ''}`}
         onSubmit={(e) => { e.preventDefault(); submit(); }}
@@ -434,21 +479,16 @@ export function NoteComposer({ editing, replyTo, onSubmit, onCancel, onQuoteClic
         {replyTo && <NoteQuote author={replyTo.author} body={replyTo.body} onClick={onQuoteClick} />}
         <div className="en-composer__field">
           {/* The textarea's text is transparent; this copy under it colours the @mentions. */}
-          <div className="en-composer__highlight" aria-hidden="true">{draft ? <MentionText text={draft} /> : ' '}</div>
+          <MentionHighlight text={draft} className="en-composer__highlight" />
           <textarea
-            ref={fieldRef}
+            {...mentions.fieldProps}
             className="en-composer__input"
             placeholder={label}
             aria-label={label}
             value={draft}
             rows={2}
-            onChange={(e) => { setDraft(e.currentTarget.value); syncMention(e.currentTarget); }}
-            onKeyUp={(e) => syncMention(e.currentTarget)}
-            onClick={(e) => syncMention(e.currentTarget)}
             onKeyDown={onKeyDown}
             onPaste={(e) => { if (e.clipboardData?.files?.length) { e.preventDefault(); addFiles(e.clipboardData.files); } }}
-            aria-autocomplete="list"
-            aria-expanded={mentionOpen}
           />
         </div>
         {(dropZone || dropping) && (
@@ -465,9 +505,8 @@ export function NoteComposer({ editing, replyTo, onSubmit, onCancel, onQuoteClic
           <IconBtn aria-label="Attach file" className={`en-icon-btn--tool${attachments.length || dropZone ? ' is-active' : ''}`} onClick={() => setDropZone(true)}>
             <Icon name="attachment" size={16} />
           </IconBtn>
-          {/* No "@" icon in the HOT set, so the button shows the character. */}
-          <IconBtn aria-label="Mention" aria-haspopup="listbox" aria-expanded={mentionOpen} className={`en-icon-btn--tool${mentionOpen ? ' is-active' : ''}`} onMouseDown={(e) => e.preventDefault()} onClick={openMentionPicker}>
-            <span className="en-composer__at">@</span>
+          <IconBtn aria-label="Mention" aria-haspopup="listbox" aria-expanded={mentions.open} className={`en-icon-btn--tool${mentions.open ? ' is-active' : ''}`} onMouseDown={(e) => e.preventDefault()} onClick={mentions.openPicker}>
+            <AtSign size={16} />
           </IconBtn>
           <IconBtn aria-label="Emoji" className="en-icon-btn--tool"><Icon name="emoji" size={16} /></IconBtn>
           <span className="en-composer__spacer" />

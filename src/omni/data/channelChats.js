@@ -107,7 +107,7 @@ const makeConvos = (inbox, channel, view, count, offset = 0) =>
       preview,
       messages: [
         { kind: 'incoming', text: preview, time: `${date}, 10:0${i + 1} AM` },
-        { kind: 'agent-text', text: 'Sure, happy to help with that!', time: `${date}, 10:0${i + 2} AM`, sender: 'Arnold' },
+        { kind: 'agent-text', text: 'Sure, happy to help with that!', time: `${date}, 10:0${i + 2} AM`, sender: 'Michael Scott' },
       ],
     };
   });

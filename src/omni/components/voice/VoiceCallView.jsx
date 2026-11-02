@@ -4,6 +4,9 @@ import SkeletonText from './SkeletonText';
 import VoicePlayer from './VoicePlayer';
 import ConversationRightPanel from '../ConversationRightPanel';
 import { SAMPLE_TRANSCRIPT, VOICE_CALLS, callerLabel } from '../../data/voiceCalls';
+import { ActivityGroup } from '../notes/EmailNotes';
+import { groupActivity, seedActivity } from '../notes/threadTimeline';
+import { useConversationFields } from '../../ConversationFields';
 
 // Icons (from omni-voice-channel)
 import sideBarIcon from '../../assets/voice/side-bar-icon.svg';
@@ -96,6 +99,21 @@ export default function VoiceCallView({ inboxName, viewType = 'Mine' }) {
 
       {/* 3. Right Panel (storybook). The storybook has no Voice panel yet, so Voice uses the SMS one. */}
       <ConversationRightPanel channel="sms" inboxName={inboxName} unassigned={viewType === 'Unassigned'} conversationId={call?.id} />
+    </div>
+  );
+}
+
+/**
+ * The call's activity under its card, as in the other channels: the assignment after the call came in,
+ * then changes made in the right panel, grouped into one summary line when there is more than one.
+ */
+function CallActivity({ call }) {
+  const { activityOf } = useConversationFields();
+  const rows = [...seedActivity({ id: call.id, firstTime: call.time }).first, ...activityOf(call.id)];
+  const groups = groupActivity(rows.map((row) => ({ kind: 'activity', row })));
+  return (
+    <div className="call-activity">
+      {groups.map((g) => <ActivityGroup key={g.key} rows={g.rows} />)}
     </div>
   );
 }
@@ -257,6 +275,7 @@ export function CallDetail({ call, isEnded, isTranscriptReady, onEndCall }) {
             </div>
           )}
         </div>
+        <CallActivity call={call} />
       </div>
     </div>
   );
