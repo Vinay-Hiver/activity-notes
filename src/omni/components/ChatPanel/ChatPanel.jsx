@@ -10,12 +10,16 @@ import {
   WhatsAppTemplateIcon,
 } from '../icons/Icon';
 import whatsappTemplateUrl from '../../icons/whatsapp-template.svg';
+import emojiIconUrl from '../../icons/emoji.svg';
+import attachFileUrl from '../../icons/attach-file.svg';
 import whatsappTemplatesUrl from '../../icons/whatsapp-templates.svg';
+// The Note icon from Figma (Activity - Notes › 12:24260), used as it is.
+import noteIcon from '../../assets/icons/note.svg';
 import TemplateModal from '../TemplateModal/TemplateModal';
 import TemplatePickerPopover from '../TemplateModal/TemplatePickerPopover';
 import TemplatePreviewCard from '../TemplateModal/TemplatePreview';
-import ReplyNoteComposer from '../composer/ReplyNoteComposer';
-import { ActivityGroup, AttachmentChip } from '../notes/EmailNotes';
+import ConversationMenu, { VIEW_ONLY_NOTES } from '../ConversationMenu';
+import { ActivityGroup, AttachmentChip, NoteComposer } from '../notes/EmailNotes';
 import { useNotesThread } from '../notes/useNotesThread';
 import { groupActivity, seedActivity } from '../notes/threadTimeline';
 import { useConversationFields } from '../../ConversationFields';
@@ -93,14 +97,64 @@ function TwentyFourHourBlock({ onChooseTemplate }) {
   );
 }
 
+const EMOJIS = [
+  '😀', '😂', '😊', '😍', '🤔', '😅', '😢', '😮',
+  '👍', '🙏', '👏', '🤝', '🎉', '🔥', '❤️', '💯',
+  '✅', '🚀', '📦', '📍', '⏰', '💬', '😎', '🙌',
+];
+
+function EmojiPickerButton({ onSelect }) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    function handleClickOutside(e) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
+
+  return (
+    <div className="emoji-picker-wrap" ref={wrapRef}>
+      <button
+        type="button"
+        className="chat-composer__tool-btn"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <img src={emojiIconUrl} width={16} height={16} alt="" />
+      </button>
+      {open && (
+        <div className="emoji-picker">
+          {EMOJIS.map((emoji) => (
+            <button
+              key={emoji}
+              type="button"
+              className="emoji-picker__item"
+              onClick={() => {
+                onSelect(emoji);
+                setOpen(false);
+              }}
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ChatPanel({ channel = 'whatsapp', conversation }) {
   const isWhatsApp = channel === 'whatsapp';
   // Messages sent here carry the name of whoever is viewing (Michael or Jim).
   const { user } = useCurrentUser();
-  // Send posts a reply to the customer, or (in Notes mode) an internal note in the thread.
-  const [composerMode, setComposerMode] = useState('reply');
-  // In Notes mode: the note being replied to or edited ({ kind: 'reply' | 'edit', note }).
-  const [composerContext, setComposerContext] = useState(null);
+  // The note composer (email's), shown in place of the reply box: null, { mode: 'new' }, or
+  // { mode: 'reply' | 'edit', note } after Reply or Edit on a note.
+  const [noteComposer, setNoteComposer] = useState(null);
+  // "View only notes" in the ⋮ menu: the thread shows its notes alone, without messages or activity.
+  const [onlyNotes, setOnlyNotes] = useState(false);
   const baseMessages = conversation?.messages || [];
   const [isBlocked, setIsBlocked] = useState(isWhatsApp && !!conversation?.blocked);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
@@ -118,8 +172,8 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
   // Notes (email-style cards, shared by Michael and Jim) and right-panel activity, in the thread.
   const notes = useNotesThread(conversation?.id, {
     scrollRef: threadRef,
-    onReply: (note) => { setComposerMode('note'); setComposerContext({ kind: 'reply', note }); setComposerText(''); },
-    onEdit: (note) => { setComposerMode('note'); setComposerContext({ kind: 'edit', note }); setComposerText(note.body); },
+    onReply: (note) => setNoteComposer({ mode: 'reply', note }),
+    onEdit: (note) => setNoteComposer({ mode: 'edit', note }),
   });
   const { activityOf } = useConversationFields();
   const activity = conversation ? activityOf(conversation.id) : [];
@@ -176,20 +230,19 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
     }, 3500);
   }
 
-  function handleSendComposerMessage(attachments = []) {
+  function submitNote({ body, attachments }) {
+    if (noteComposer.mode === 'edit') notes.edit(noteComposer.note.id, body, attachments);
+    else notes.add({ body, attachments, replyTo: noteComposer.mode === 'reply' ? noteComposer.note : null });
+    setNoteComposer(null);
+  }
+
+  function handleSendComposerMessage() {
     const text = composerText.trim();
-    if (!text && !attachments.length) return;
-    if (composerMode === 'note') {
-      if (composerContext?.kind === 'edit') notes.edit(composerContext.note.id, text, attachments);
-      else notes.add({ body: text, attachments, replyTo: composerContext?.kind === 'reply' ? composerContext.note : null });
-      setComposerContext(null);
-      setComposerText('');
-      return;
-    }
+    if (!text) return;
     const msgId = `agent-${Date.now()}`;
     setDynamicMessages((prev) => [
       ...prev,
-      { id: msgId, kind: 'agent-text', text, attachments, sender: user.name, time: formatNow(), status: 'sent' },
+      { id: msgId, kind: 'agent-text', text, sender: user.name, time: formatNow(), status: 'sent' },
     ]);
     setComposerText('');
 
@@ -216,9 +269,16 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
     }
   }
 
-  function handleComposerChange(val) {
-    // "/" opens the template picker only while replying, not while writing a note.
-    if (isWhatsApp && composerMode === 'reply' && val.startsWith('/') && !isTemplatePickerOpen) {
+  function handleComposerKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendComposerMessage();
+    }
+  }
+
+  function handleComposerChange(e) {
+    const val = e.target.value;
+    if (isWhatsApp && val.startsWith('/') && !isTemplatePickerOpen) {
       setComposerText(val);
       openTemplatePickerAtComposer();
       return;
@@ -316,11 +376,15 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
           {(conversation?.avatarInitial || conversation?.title || '?').charAt(0).toUpperCase()}
         </span>
         <span className="chat-panel__topbar-title">{conversation?.title}</span>
+        <ConversationMenu className="chat-panel__menu" options={[VIEW_ONLY_NOTES]} onlyNotes={onlyNotes} onSelect={() => setOnlyNotes((on) => !on)} />
       </div>
 
       <div className="chat-panel__thread" ref={threadRef}>
         {notes.pinned}
-        {baseMessages.map((m, i) => (
+        {onlyNotes && (notes.notes.length
+          ? notes.notes.map((note) => <div key={note.id} className="chat-thread-item">{notes.renderNote(note)}</div>)
+          : <p className="en-notes-empty">No notes in this conversation yet.</p>)}
+        {!onlyNotes && baseMessages.map((m, i) => (
           <React.Fragment key={`base-${i}`}>
             {m.kind === 'incoming' ? (
               <IncomingBubble text={m.text} time={m.time} />
@@ -336,43 +400,71 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
             {threadAfter(i).map(renderThreadItem)}
           </React.Fragment>
         ))}
-        {baseMessages.length === 0 && groupActivity(later).map(renderThreadItem)}
+        {!onlyNotes && baseMessages.length === 0 && groupActivity(later).map(renderThreadItem)}
       </div>
 
       {conversation?.view !== 'Assigned to Bot' && (
         <div className="chat-panel__composer-wrap" ref={composerWrapRef}>
-          {isBlocked ? (
-            <TwentyFourHourBlock onChooseTemplate={openTemplateModal} />
-          ) : (
-            <ReplyNoteComposer
-              mode={composerMode}
-              onModeChange={(next) => { setComposerMode(next); setComposerContext(null); }}
-              placeholder={
-                composerMode === 'note'
-                  ? 'Add an internal note. Type @ to mention a teammate'
-                  : isWhatsApp
-                    ? "Shift + Enter for new line. Type ‘/’ to search for WhatsApp templates and send quick replies"
-                    : "Shift + Enter for new line. Type ‘/’ to search for chat templates and send quick replies"
-              }
-              value={composerText}
-              onValueChange={handleComposerChange}
-              onSend={handleSendComposerMessage}
-              context={composerContext}
-              onClearContext={() => { if (composerContext?.kind === 'edit') setComposerText(''); setComposerContext(null); }}
-              onQuoteClick={() => composerContext && notes.scrollToNote(composerContext.note.id)}
-              // WhatsApp templates go to the customer, so the button is there while replying.
-              extraTools={isWhatsApp && composerMode === 'reply' && (
-                <button
-                  ref={templateButtonRef}
-                  type="button"
-                  aria-label="WhatsApp templates"
-                  className={`rn-composer__tool${isTemplatePickerOpen ? ' is-active' : ''}`}
-                  onClick={toggleTemplatePicker}
-                >
-                  <img src={whatsappTemplatesUrl} width={14} height={14} alt="" />
-                </button>
-              )}
+          {noteComposer ? (
+            // Add note (or Reply / Edit on a note) swaps the reply box for email's note composer.
+            <NoteComposer
+              key={`${noteComposer.mode}-${noteComposer.note?.id ?? 'new'}`}
+              editing={noteComposer.mode === 'edit' ? noteComposer.note : undefined}
+              replyTo={noteComposer.mode === 'reply' ? noteComposer.note : undefined}
+              onQuoteClick={() => noteComposer.note && notes.scrollToNote(noteComposer.note.id)}
+              onSubmit={submitNote}
+              onCancel={() => setNoteComposer(null)}
             />
+          ) : (
+            <>
+              {isBlocked ? (
+                <TwentyFourHourBlock onChooseTemplate={openTemplateModal} />
+              ) : (
+                <div className="chat-composer">
+                  <textarea
+                    className="chat-composer__input"
+                    placeholder={
+                      isWhatsApp
+                        ? "Shift + Enter for new line. Type ‘/’ to search for WhatsApp templates and send quick replies"
+                        : 'Shift + Enter for new line'
+                    }
+                    value={composerText}
+                    onChange={handleComposerChange}
+                    onKeyDown={handleComposerKeyDown}
+                  />
+                  <div className="chat-composer__toolbar">
+                    <div className="chat-composer__tools">
+                      <EmojiPickerButton onSelect={(emoji) => setComposerText((prev) => prev + emoji)} />
+                      <button className="chat-composer__tool-btn" type="button">
+                        <img src={attachFileUrl} width={16} height={16} alt="" />
+                      </button>
+                      {isWhatsApp && (
+                        <button
+                          ref={templateButtonRef}
+                          type="button"
+                          className={'chat-composer__tool-btn' + (isTemplatePickerOpen ? ' chat-composer__tool-btn--active' : '')}
+                          onClick={toggleTemplatePicker}
+                        >
+                          <img src={whatsappTemplatesUrl} width={16} height={16} alt="" />
+                        </button>
+                      )}
+                    </div>
+                    <button
+                      className="chat-composer__send"
+                      type="button"
+                      disabled={!composerText.trim()}
+                      onClick={handleSendComposerMessage}
+                    >
+                      Send
+                    </button>
+                  </div>
+                </div>
+              )}
+              {/* Email's Add note button, 12px under the reply box */}
+              <div className="add-note-row">
+                <button type="button" className="en-footer__btn" onClick={() => setNoteComposer({ mode: 'new' })}><img src={noteIcon} alt="" />Add note</button>
+              </div>
+            </>
           )}
           {isWhatsApp && isTemplatePickerOpen && (
             <TemplatePickerPopover

@@ -2,8 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import addEmojiIcon from '../../icons/add-emoji.svg';
 import deleteMessageIcon from '../../icons/delete-message.svg';
 import openInSlackIcon from '../../icons/optn-in-slack.svg';
-import ReplyNoteComposer from '../composer/ReplyNoteComposer';
-import { ActivityGroup, AttachmentChip } from '../notes/EmailNotes';
+import emojiIcon from '../../icons/emoji.svg';
+import attachFileIcon from '../../icons/attach-file.svg';
+// The Note icon from Figma (Activity - Notes › 12:24260), used as it is.
+import noteIcon from '../../assets/icons/note.svg';
+import ConversationMenu, { VIEW_ONLY_NOTES } from '../ConversationMenu';
+import { ActivityGroup, AttachmentChip, NoteComposer } from '../notes/EmailNotes';
 import { useNotesThread } from '../notes/useNotesThread';
 import { groupActivity, seedActivity } from '../notes/threadTimeline';
 import { useConversationFields } from '../../ConversationFields';
@@ -97,10 +101,11 @@ function SlackMessage({ name, time, text, attachments, role, initial, color, rea
 }
 
 export default function SlackChatPanel({ inboxName, conversation }) {
-  // Send posts a reply in Slack, or (in Notes mode) an internal note in the thread.
-  const [mode, setMode] = useState('reply');
-  // In Notes mode: the note being replied to or edited ({ kind: 'reply' | 'edit', note }).
-  const [context, setContext] = useState(null);
+  // The note composer (email's), shown in place of the reply box: null, { mode: 'new' }, or
+  // { mode: 'reply' | 'edit', note } after Reply or Edit on a note.
+  const [noteComposer, setNoteComposer] = useState(null);
+  // "View only notes" in the ⋮ menu: the thread shows its notes alone, without messages or activity.
+  const [onlyNotes, setOnlyNotes] = useState(false);
   // Messages sent here carry the name of whoever is viewing (Michael or Jim); your own say "(You)".
   const { user } = useCurrentUser();
   const agentFor = (name) => {
@@ -119,8 +124,8 @@ export default function SlackChatPanel({ inboxName, conversation }) {
   // Notes (email-style cards, shared by Michael and Jim) and right-panel activity, in the thread.
   const notes = useNotesThread(conversation?.id, {
     scrollRef: threadRef,
-    onReply: (note) => { setMode('note'); setContext({ kind: 'reply', note }); setText(''); },
-    onEdit: (note) => { setMode('note'); setContext({ kind: 'edit', note }); setText(note.body); },
+    onReply: (note) => setNoteComposer({ mode: 'reply', note }),
+    onEdit: (note) => setNoteComposer({ mode: 'edit', note }),
   });
   const { activityOf } = useConversationFields();
   const activity = conversation ? activityOf(conversation.id) : [];
@@ -130,21 +135,24 @@ export default function SlackChatPanel({ inboxName, conversation }) {
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, notes.notes.length, activity.length]);
 
-  function send(attachments = []) {
+  function submitNote({ body, attachments }) {
+    if (noteComposer.mode === 'edit') notes.edit(noteComposer.note.id, body, attachments);
+    else notes.add({ body, attachments, replyTo: noteComposer.mode === 'reply' ? noteComposer.note : null });
+    setNoteComposer(null);
+  }
+
+  function send() {
     const value = text.trim();
-    if (!value && !attachments.length) return;
-    if (mode === 'note') {
-      if (context?.kind === 'edit') notes.edit(context.note.id, value, attachments);
-      else notes.add({ body: value, attachments, replyTo: context?.kind === 'reply' ? context.note : null });
-      setContext(null);
-      setText('');
-      return;
-    }
-    setMessages((prev) => [...prev, { id: `agent-${Date.now()}`, kind: 'agent-text', text: value, attachments, sender: user.name, time: formatNow() }]);
+    if (!value) return;
+    setMessages((prev) => [...prev, { id: `agent-${Date.now()}`, kind: 'agent-text', text: value, sender: user.name, time: formatNow() }]);
     setText('');
     setTimeout(() => {
       setMessages((prev) => [...prev, { id: `reply-${Date.now()}`, kind: 'incoming', text: randomReply(), time: formatNow() }]);
     }, 2000);
+  }
+
+  function onKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
   }
 
   const deleteMsg = (id) => setMessages((prev) => prev.filter((m) => m.id !== id));
@@ -219,34 +227,61 @@ export default function SlackChatPanel({ inboxName, conversation }) {
     <div className="slack-panel">
       <div className="slack-topbar">
         <span className="slack-topbar__name">{conversation?.name}</span>
-        <span className="slack-topbar__chip">#{conversation?.channel}</span>
+        <span className="slack-topbar__end">
+          <span className="slack-topbar__chip">#{conversation?.channel}</span>
+          <ConversationMenu options={[VIEW_ONLY_NOTES]} onlyNotes={onlyNotes} onSelect={() => setOnlyNotes((on) => !on)} />
+        </span>
       </div>
 
       <div className="slack-thread" ref={threadRef}>
         {notes.pinned && <div className="slack-note slack-note--pinned">{notes.pinned}</div>}
-        {base.map((m, i) => (
+        {onlyNotes && (notes.notes.length
+          ? notes.notes.map((note) => <div key={note.id} className="slack-note">{notes.renderNote(note)}</div>)
+          : <p className="en-notes-empty">No notes in this conversation yet.</p>)}
+        {!onlyNotes && base.map((m, i) => (
           <React.Fragment key={m.id}>
             {renderMessage(m)}
             {threadAfter(i).map(renderThreadItem)}
           </React.Fragment>
         ))}
-        {base.length === 0 && groupActivity(later).map(renderThreadItem)}
+        {!onlyNotes && base.length === 0 && groupActivity(later).map(renderThreadItem)}
       </div>
 
       <div className="slack-composer-wrap">
-        <ReplyNoteComposer
-          mode={mode}
-          onModeChange={(next) => { setMode(next); setContext(null); }}
-          placeholder={mode === 'note'
-            ? 'Add an internal note. Type @ to mention a teammate'
-            : 'Shift + Enter for new line. Type ‘/’ to search for Slack templates and send quick replies'}
-          value={text}
-          onValueChange={setText}
-          onSend={send}
-          context={context}
-          onClearContext={() => { if (context?.kind === 'edit') setText(''); setContext(null); }}
-          onQuoteClick={() => context && notes.scrollToNote(context.note.id)}
-        />
+        {noteComposer ? (
+          // Add note (or Reply / Edit on a note) swaps the reply box for email's note composer.
+          <NoteComposer
+            key={`${noteComposer.mode}-${noteComposer.note?.id ?? 'new'}`}
+            editing={noteComposer.mode === 'edit' ? noteComposer.note : undefined}
+            replyTo={noteComposer.mode === 'reply' ? noteComposer.note : undefined}
+            onQuoteClick={() => noteComposer.note && notes.scrollToNote(noteComposer.note.id)}
+            onSubmit={submitNote}
+            onCancel={() => setNoteComposer(null)}
+          />
+        ) : (
+          <>
+            <div className="slack-composer">
+              <textarea
+                className="slack-composer__input"
+                placeholder="Shift + Enter for new line. Type ‘/’ to search for Slack templates and send quick replies"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                onKeyDown={onKeyDown}
+              />
+              <div className="slack-composer__toolbar">
+                <div className="slack-composer__tools">
+                  <button type="button" className="slack-composer__tool-btn"><img src={emojiIcon} width="16" height="16" alt="" /></button>
+                  <button type="button" className="slack-composer__tool-btn"><img src={attachFileIcon} width="16" height="16" alt="" /></button>
+                </div>
+                <button type="button" className="slack-composer__send" disabled={!text.trim()} onClick={send}>Send</button>
+              </div>
+            </div>
+            {/* Email's Add note button, 12px under the reply box */}
+            <div className="add-note-row">
+              <button type="button" className="en-footer__btn" onClick={() => setNoteComposer({ mode: 'new' })}><img src={noteIcon} alt="" />Add note</button>
+            </div>
+          </>
+        )}
       </div>
       {notes.dialogs}
     </div>

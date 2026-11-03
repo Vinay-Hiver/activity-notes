@@ -140,3 +140,6 @@
 
 /* A pinned note sits 20px above the first message (the email thread's 16px gap plus 4px) */
 .messages-container > .en-pinned { margin-bottom: 4px; }
+
+/* "View only notes" with no notes yet */
+.en-notes-empty { margin: 0; padding: 20px 12px; font-size: 14px; line-height: 20px; color: var(--slateTextSubtle); text-align: center; }

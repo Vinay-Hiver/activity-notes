@@ -152,3 +152,11 @@
 
 /* A pinned note sits 20px above the first message */
 .slack-note--pinned { padding-bottom: 20px; }
+
+/* The channel chip and the ⋮ menu, at the right end of the top bar */
+.slack-topbar__end { display: flex; align-items: center; gap: 8px; }
+
+/* Email's Add note button, 12px under the reply box */
+.slack-composer-wrap .add-note-row { display: flex; margin-top: 12px; }
+/* Email's note composer in place of the reply box: no strip of its own around it */
+.slack-composer-wrap .en-composer-wrap { padding: 0; background: none; }

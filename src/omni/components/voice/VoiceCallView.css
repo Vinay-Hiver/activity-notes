@@ -606,3 +606,8 @@
 .active-call-page .call-pinned { box-sizing: border-box; flex: none; width: 100%; max-width: 900px; margin-bottom: 20px; align-self: center; }
 .active-call-page .call-timeline__note:first-child { padding-top: 20px; }
 .active-call-page .call-timeline__note + .call-timeline__note { padding-top: 8px; }
+
+/* The Ongoing pill and the ⋮ menu, at the right end of the status bar */
+.active-call-page .status-right { display: flex; align-items: center; gap: 8px; }
+/* "View only notes": the notes take the whole area */
+.active-call-page .call-notes-only { max-height: none; flex: 1; min-height: 0; }

@@ -6,6 +6,7 @@ import ConversationRightPanel from '../ConversationRightPanel';
 import { SAMPLE_TRANSCRIPT, VOICE_CALLS, callerLabel } from '../../data/voiceCalls';
 import { ActivityGroup, NoteComposer } from '../notes/EmailNotes';
 import { useNotesThread } from '../notes/useNotesThread';
+import ConversationMenu, { VIEW_ONLY_NOTES } from '../ConversationMenu';
 // The Note icon from Figma (Activity - Notes › 12:24260), used as it is.
 import noteIcon from '../../assets/icons/note.svg';
 import { groupActivity, seedActivity } from '../notes/threadTimeline';
@@ -136,6 +137,8 @@ export function CallDetail({ call, isEnded, isTranscriptReady, onEndCall }) {
   // Notes on the call (email-style cards and composer, shared by Michael and Jim).
   // `composer` is null (the Add note strip shows), { mode: 'new' }, or { mode: 'reply' | 'edit', note }.
   const [composer, setComposer] = React.useState(null);
+  // "View only notes" in the ⋮ menu: the call card and activity hide, and only the notes show.
+  const [onlyNotes, setOnlyNotes] = React.useState(false);
   const timelineRef = React.useRef(null);
   const notes = useNotesThread(call.id, {
     scrollRef: timelineRef,
@@ -164,17 +167,28 @@ export function CallDetail({ call, isEnded, isTranscriptReady, onEndCall }) {
             {`Voice call with ${callerLabel(call)}`}
           </span>
         </div>
-        {!isEnded && (
-          <div className="status-pill-green">
-            <img src={incomingCallDg10} alt="" width="10" height="10" />
-            <span>Ongoing</span>
-          </div>
-        )}
+        <div className="status-right">
+          {!isEnded && (
+            <div className="status-pill-green">
+              <img src={incomingCallDg10} alt="" width="10" height="10" />
+              <span>Ongoing</span>
+            </div>
+          )}
+          <ConversationMenu options={[VIEW_ONLY_NOTES]} onlyNotes={onlyNotes} onSelect={() => setOnlyNotes((on) => !on)} />
+        </div>
       </div>
 
       <div className="detail-content-area">
         {/* A pinned note sits above the call card (the conversation's first card), as in the other channels. */}
         {notes.pinned && <div className="call-pinned">{notes.pinned}</div>}
+        {onlyNotes ? (
+          <div className="call-activity call-notes-only" ref={timelineRef}>
+            {notes.notes.length
+              ? notes.notes.map((note) => <div key={note.id} className="call-timeline__note">{notes.renderNote(note)}</div>)
+              : <p className="en-notes-empty">No notes in this conversation yet.</p>}
+          </div>
+        ) : (
+          <>
         <div className={`call-card-large ${isTranscriptOpen ? 'transcript-open' : ''}`}>
           <div className="card-header-info">
             <div className="header-contact">
@@ -304,6 +318,8 @@ export function CallDetail({ call, isEnded, isTranscriptReady, onEndCall }) {
           )}
         </div>
         <CallTimeline call={call} notes={notes} scrollRef={timelineRef} />
+          </>
+        )}
       </div>
 
       {/* The email thread's bottom strip, with Add note only (a call has no Reply). */}

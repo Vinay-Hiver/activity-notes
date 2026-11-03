@@ -405,3 +405,11 @@
 
 /* Files sent with a message sit under its bubble, right-aligned */
 .chat-message__files { justify-content: flex-end; }
+
+/* The ⋮ menu sits at the right end of the top bar */
+.chat-panel__menu { margin-left: auto; }
+
+/* Email's Add note button, 12px under the reply box */
+.add-note-row { display: flex; margin-top: 12px; }
+/* Email's note composer in place of the reply box: no strip of its own around it */
+.chat-panel__composer-wrap .en-composer-wrap { padding: 0; background: none; }

@@ -1,0 +1,20 @@
+/* The ⋮ button at the top right of a conversation, and its menu */
+.conversation-menu__btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  color: var(--slateTextBody);
+}
+.conversation-menu__btn:hover,
+.conversation-menu__btn.is-open { background: var(--slateSurfaceSubtle100Hover); }
+
+.hot-dropdown.conversation-menu { width: 240px; }
