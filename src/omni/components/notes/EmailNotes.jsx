@@ -480,7 +480,7 @@ export function NoteComposer({ editing, replyTo, onSubmit, onCancel, onQuoteClic
   };
 
   const replyName = replyTo && (replyTo.authorId === user.id ? 'your note' : replyTo.author);
-  const label = editing ? 'Edit note' : replyTo ? `Reply to ${replyName}` : 'Add internal note';
+  const title = editing ? 'Edit note' : replyTo ? `Reply to ${replyName}` : 'Internal note';
 
   return (
     <div className="en-composer-wrap">
@@ -492,6 +492,11 @@ export function NoteComposer({ editing, replyTo, onSubmit, onCancel, onQuoteClic
         onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setDropping(false); }}
         onDrop={(e) => { e.preventDefault(); setDropping(false); addFiles(e.dataTransfer.files); }}
       >
+        {/* Figma: Activity - Notes › 43:7961 Form (Activity and Notes) */}
+        <div className="en-composer__head">
+          <span className="en-composer__title">{title}</span>
+          <span className="en-composer__hint">Only your team sees notes</span>
+        </div>
         {replyTo && <NoteQuote author={replyTo.author} body={replyTo.body} onClick={onQuoteClick} />}
         <div className="en-composer__field">
           {/* The textarea's text is transparent; this copy under it colours the @mentions. */}
@@ -499,8 +504,8 @@ export function NoteComposer({ editing, replyTo, onSubmit, onCancel, onQuoteClic
           <textarea
             {...mentions.fieldProps}
             className="en-composer__input"
-            placeholder={label}
-            aria-label={label}
+            placeholder="Write an internal note"
+            aria-label={title}
             value={draft}
             rows={2}
             onKeyDown={onKeyDown}
