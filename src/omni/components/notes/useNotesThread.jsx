@@ -79,10 +79,11 @@ export function useNotesThread(convoId, { onReply, onEdit, scrollRef }) {
       note={note}
       elementId={copy === 'pin' ? `thread-note-${note.id}-pin` : `thread-note-${note.id}`}
       // The pinned copy and the note in the thread open and close on their own.
-      expanded={!!openIds[`${copy}-${note.id}`]}
+      // A reply to a note opens by default; other notes start closed.
+      expanded={openIds[`${copy}-${note.id}`] ?? !!note.replyTo}
       pinned={thread.pin?.id === note.id}
       highlighted={highlightId === note.id}
-      onToggle={() => setOpenIds((o) => ({ ...o, [`${copy}-${note.id}`]: !o[`${copy}-${note.id}`] }))}
+      onToggle={() => setOpenIds((o) => ({ ...o, [`${copy}-${note.id}`]: !(o[`${copy}-${note.id}`] ?? !!note.replyTo) }))}
       onPin={() => togglePin(note.id)}
       onReply={() => onReply(note)}
       onQuoteClick={note.replyTo ? () => scrollToNote(note.replyTo.noteId) : undefined}

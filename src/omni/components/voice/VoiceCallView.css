@@ -9,7 +9,10 @@
 
 .active-call-page /* 1. Left Panel (Call List) */
 .call-list-panel {
-  width: 310px;
+  width: 300px;
+  min-width: 300px;
+  max-width: 300px;
+  flex-shrink: 0;
   background-color: var(--slateSurfaceWhite, white);
   border-right: 1px solid var(--slateBorderMild, #edf1f6);
   display: flex;
@@ -602,6 +605,7 @@
 /* The call's activity and notes, under the card in the same 900px column; they scroll if they grow long */
 .active-call-page .call-activity { box-sizing: border-box; display: flex; flex: none; flex-direction: column; width: 100%; max-width: 900px; max-height: 45%; align-self: center; overflow-y: auto; }
 .active-call-page .call-activity .en-activity { padding-left: 0; padding-right: 0; }
+.active-call-page .call-activity > .en-activity { padding-left: 12px; }
 /* A pinned note, above the call card in the same column, 20px above it */
 .active-call-page .call-pinned { box-sizing: border-box; flex: none; width: 100%; max-width: 900px; margin-bottom: 20px; align-self: center; }
 .active-call-page .call-timeline__note:first-child { padding-top: 20px; }

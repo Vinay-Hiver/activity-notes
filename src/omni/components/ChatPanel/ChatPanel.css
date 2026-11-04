@@ -399,6 +399,8 @@
 .chat-thread-item .en-activity { padding-left: 0; padding-right: 0; }
 /* Activity brings its own 20px above and below */
 .chat-thread-item--activity { padding-bottom: 0; }
+/* Notes one after another sit 8px apart (8px padding + 4px thread gap − 4px) */
+.chat-thread-item--note + .chat-thread-item--note { margin-top: -4px; }
 
 /* A pinned note sits 20px above the first message (the thread's 4px gap plus 16px) */
 .chat-panel__thread > .en-pinned { margin-bottom: 16px; }

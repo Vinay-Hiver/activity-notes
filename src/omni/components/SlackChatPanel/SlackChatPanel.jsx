@@ -219,7 +219,7 @@ export default function SlackChatPanel({ inboxName, conversation }) {
 
   function renderThreadItem(item) {
     if (item.kind === 'activity') return <div key={item.key} className="slack-note slack-note--activity"><ActivityGroup rows={item.rows} /></div>;
-    if (item.kind === 'note') return <div key={item.note.id} className="slack-note">{notes.renderNote(item.note)}</div>;
+    if (item.kind === 'note') return <div key={item.note.id} className="slack-note slack-note--note">{notes.renderNote(item.note)}</div>;
     return renderMessage(item.message);
   }
 
@@ -236,7 +236,7 @@ export default function SlackChatPanel({ inboxName, conversation }) {
       <div className="slack-thread" ref={threadRef}>
         {notes.pinned && <div className="slack-note slack-note--pinned">{notes.pinned}</div>}
         {onlyNotes && (notes.notes.length
-          ? notes.notes.map((note) => <div key={note.id} className="slack-note">{notes.renderNote(note)}</div>)
+          ? notes.notes.map((note) => <div key={note.id} className="slack-note slack-note--note">{notes.renderNote(note)}</div>)
           : <p className="en-notes-empty">No notes in this conversation yet.</p>)}
         {!onlyNotes && base.map((m, i) => (
           <React.Fragment key={m.id}>

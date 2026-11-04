@@ -1,5 +1,7 @@
 .conversation-list {
-  width: 320px;
+  width: 300px;
+  min-width: 300px;
+  max-width: 300px;
   height: 100vh;
   background-color: white;
   border-right: 1px solid #edf1f6;

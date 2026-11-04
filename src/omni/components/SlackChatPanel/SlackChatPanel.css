@@ -6,7 +6,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: var(--slateSurfaceWhite, #fff);
+  background: var(--slateSurfaceSubtle);
   border-left: 1px solid var(--slateBorderLight);
   border-right: 1px solid var(--slateBorderLight);
   font-family: 'Hanken Grotesk', sans-serif;
@@ -20,7 +20,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  background: var(--slateSurfaceSubtle, #f8fafc);
+  background: var(--slateSurfaceWhite);
   border-bottom: 1px solid var(--slateBorderLight);
 }
 .slack-topbar__name { font-size: 14px; font-weight: 500; color: var(--slateTextTitle); }
@@ -34,7 +34,7 @@
 /* Thread — extra top padding so the first message's hover toolbar
    (which floats above the row) doesn't overlap the top bar. */
 /* The thread and composer sit in a centred column of at most 900px. */
-.slack-thread { flex: 1; min-height: 0; overflow-y: auto; padding: 20px max(0px, calc((100% - 900px) / 2)) 0; }
+.slack-thread { flex: 1; min-height: 0; overflow-y: auto; background: var(--slateSurfaceSubtle); padding: 20px max(0px, calc((100% - 900px) / 2)) 0; }
 
 /* Message row (full width) */
 .slack-msg {
@@ -46,7 +46,7 @@
   padding: 12px 20px;
   align-items: flex-start;
 }
-.slack-msg:hover { background: var(--slateSurfaceSubtle, #f8fafc); }
+.slack-msg:hover { background: var(--slateSurfaceWhite); }
 
 .slack-msg__avatar {
   width: 30px; height: 30px; border-radius: 100px; flex-shrink: 0;
@@ -149,6 +149,8 @@
 .slack-note .en-activity { padding-left: 0; padding-right: 0; }
 /* Activity brings its own 20px above and below */
 .slack-note--activity { padding-top: 0; padding-bottom: 0; }
+/* Notes one after another sit 8px apart (6px below one, 2px above the next) */
+.slack-note--note + .slack-note--note { padding-top: 2px; }
 
 /* A pinned note sits 20px above the first message */
 .slack-note--pinned { padding-bottom: 20px; }

@@ -59,7 +59,6 @@
 .en-note__edited { font-weight: var(--fontWeightMedium); color: var(--slateTextSubtle); }
 .en-note__attach-count { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; vertical-align: middle; color: var(--slateTextSubtle); }
 .en-note__attach-count svg { width: 12px; height: 12px; }
-.en-note__hidden { display: flex; align-items: center; gap: 8px; font-size: 12px; line-height: 18px; color: var(--slateTextSubtle); }
 
 /* Pin, Reply, Edit, Delete: 20px buttons shown while the note is hovered */
 .en-note__actions { display: none; flex: none; align-items: center; gap: 6px; margin-right: 2px; }
@@ -137,6 +136,8 @@
    20px (its own padding) from the message or note above and below. */
 .messages-container > .en-activity { margin-top: -16px; margin-bottom: -16px; }
 .messages-container > .en-activity:last-child { margin-bottom: 0; }
+/* Notes one after another sit 8px apart, not the thread's 16px */
+.messages-container > .en-note + .en-note { margin-top: -8px; }
 
 /* A pinned note sits 20px above the first message (the email thread's 16px gap plus 4px) */
 .messages-container > .en-pinned { margin-bottom: 4px; }

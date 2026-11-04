@@ -168,10 +168,11 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
       note={note}
       elementId={copy === 'pin' ? `email-note-${note.id}-pin` : `email-note-${note.id}`}
       // The pinned copy and the note in the thread open and close on their own.
-      expanded={!!openNoteIds[`${copy}-${note.id}`]}
+      // A reply to a note opens by default; other notes start closed.
+      expanded={openNoteIds[`${copy}-${note.id}`] ?? !!note.replyTo}
       pinned={thread.pin?.id === note.id}
       highlighted={highlightId === note.id}
-      onToggle={() => setOpenNoteIds((o) => ({ ...o, [`${copy}-${note.id}`]: !o[`${copy}-${note.id}`] }))}
+      onToggle={() => setOpenNoteIds((o) => ({ ...o, [`${copy}-${note.id}`]: !(o[`${copy}-${note.id}`] ?? !!note.replyTo) }))}
       onPin={() => togglePin(note.id)}
       onReply={() => openComposer({ mode: 'reply', noteId: note.id })}
       onQuoteClick={note.replyTo ? () => scrollToNote(note.replyTo.noteId) : undefined}

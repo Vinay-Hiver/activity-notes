@@ -365,7 +365,7 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
 
   function renderThreadItem(item) {
     if (item.kind === 'activity') return <div key={item.key} className="chat-thread-item chat-thread-item--activity"><ActivityGroup rows={item.rows} /></div>;
-    if (item.kind === 'note') return <div key={item.note.id} className="chat-thread-item">{notes.renderNote(item.note)}</div>;
+    if (item.kind === 'note') return <div key={item.note.id} className="chat-thread-item chat-thread-item--note">{notes.renderNote(item.note)}</div>;
     return renderMessage(item.entry);
   }
 
@@ -382,7 +382,7 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
       <div className="chat-panel__thread" ref={threadRef}>
         {notes.pinned}
         {onlyNotes && (notes.notes.length
-          ? notes.notes.map((note) => <div key={note.id} className="chat-thread-item">{notes.renderNote(note)}</div>)
+          ? notes.notes.map((note) => <div key={note.id} className="chat-thread-item chat-thread-item--note">{notes.renderNote(note)}</div>)
           : <p className="en-notes-empty">No notes in this conversation yet.</p>)}
         {!onlyNotes && baseMessages.map((m, i) => (
           <React.Fragment key={`base-${i}`}>

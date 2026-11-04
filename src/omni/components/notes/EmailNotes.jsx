@@ -4,7 +4,6 @@ import { Button } from '../../../components/Button';
 import { Modal, ModalText } from '../../../components/Modal';
 import { Tooltip } from '../../../components/Tooltip';
 import { Icon } from '../../../icons/Icon';
-import { EyeOff } from '../../../icons/EyeOff';
 // The Mention icon from Figma (Activity - Notes › 21:5693), used as it is.
 import mentionIcon from '../../assets/icons/mention.svg';
 import { USERS, useCurrentUser } from '../../CurrentUser';
@@ -271,7 +270,6 @@ export function NoteCard({ note, elementId, expanded, pinned, highlighted, onTog
           {note.attachments?.length > 0 && (
             <div className="en-attach-list">{note.attachments.map((f) => <AttachmentChip key={f.id} file={f} />)}</div>
           )}
-          <div className="en-note__hidden"><EyeOff size={14} />Not visible to customers</div>
         </>
       ) : (
         <>
