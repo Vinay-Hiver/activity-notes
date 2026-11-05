@@ -438,11 +438,10 @@ export { NoteQuote };
  * note being replied to (or neither for a new note). Calls onSubmit({ body, attachments }).
  */
 export function NoteComposer({ editing, replyTo, onSubmit, onCancel, onQuoteClick }) {
-  const { user } = useCurrentUser();
   const [draft, setDraft] = React.useState(editing?.body ?? '');
   const [attachments, setAttachments] = React.useState(editing?.attachments ? [...editing.attachments] : []);
   const [dropping, setDropping] = React.useState(false);
-  const [dropZone, setDropZone] = React.useState(false);
+  const fileRef = React.useRef(null);
   const mentions = useMentions(draft, setDraft);
   const original = React.useMemo(() => new Set((editing?.attachments ?? []).map((f) => f.id)), [editing]);
 
@@ -457,7 +456,7 @@ export function NoteComposer({ editing, replyTo, onSubmit, onCancel, onQuoteClic
 
   const addFiles = (files) => {
     const next = toAttachments(files);
-    if (next.length) { setAttachments((cur) => [...cur, ...next]); setDropZone(false); }
+    if (next.length) setAttachments((cur) => [...cur, ...next]);
   };
   const removeFile = (id) => setAttachments((cur) => {
     const target = cur.find((f) => f.id === id);
@@ -479,8 +478,7 @@ export function NoteComposer({ editing, replyTo, onSubmit, onCancel, onQuoteClic
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); submit(); }
   };
 
-  const replyName = replyTo && (replyTo.authorId === user.id ? 'your note' : replyTo.author);
-  const title = editing ? 'Edit note' : replyTo ? `Reply to ${replyName}` : 'Internal note';
+  const title = editing ? 'Editing a note' : replyTo ? 'Reply to note' : 'Internal note';
 
   return (
     <div className="en-composer-wrap">
@@ -512,18 +510,13 @@ export function NoteComposer({ editing, replyTo, onSubmit, onCancel, onQuoteClic
             onPaste={(e) => { if (e.clipboardData?.files?.length) { e.preventDefault(); addFiles(e.clipboardData.files); } }}
           />
         </div>
-        {(dropZone || dropping) && (
-          <label className={`en-composer__drop${dropping ? ' is-active' : ''}`}>
-            <input type="file" className="en-file-input" multiple onChange={(e) => { const files = Array.from(e.target.files ?? []); e.target.value = ''; addFiles(files); }} />
-            <Icon name="attachment" size={16} />
-            <span>{dropping ? 'Drop files to attach' : 'Drop files here or click to browse'}</span>
-          </label>
-        )}
         {attachments.length > 0 && (
           <div className="en-attach-list">{attachments.map((f) => <AttachmentChip key={f.id} file={f} onRemove={() => removeFile(f.id)} />)}</div>
         )}
         <div className="en-composer__bar">
-          <IconBtn aria-label="Attach file" className={`en-icon-btn--tool${attachments.length || dropZone ? ' is-active' : ''}`} onClick={() => setDropZone((shown) => !shown)}>
+          {/* Attach opens the file picker straight away; files can also be dropped or pasted on the composer. */}
+          <input ref={fileRef} type="file" className="en-file-input" multiple onChange={(e) => { const files = Array.from(e.target.files ?? []); e.target.value = ''; addFiles(files); }} />
+          <IconBtn aria-label="Attach file" className={`en-icon-btn--tool${attachments.length ? ' is-active' : ''}`} onClick={() => fileRef.current?.click()}>
             <Icon name="attachment" size={16} />
           </IconBtn>
           <IconBtn aria-label="Mention" aria-haspopup="listbox" aria-expanded={mentions.open} className={`en-icon-btn--tool${mentions.open ? ' is-active' : ''}`} onMouseDown={(e) => e.preventDefault()} onClick={mentions.openPicker}>
