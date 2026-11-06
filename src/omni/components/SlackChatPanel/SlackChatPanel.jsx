@@ -233,6 +233,7 @@ export default function SlackChatPanel({ inboxName, conversation }) {
         </span>
       </div>
 
+      {notes.sticky}
       <div className="slack-thread" ref={threadRef}>
         {notes.pinned && <div className="slack-note slack-note--pinned">{notes.pinned}</div>}
         {onlyNotes && (notes.notes.length

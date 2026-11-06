@@ -9,7 +9,7 @@ import { useCurrentUser } from '../CurrentUser';
 import { useEmailNotes } from '../EmailNotesStore';
 import { groupActivity, seedActivity } from './notes/threadTimeline';
 import { useConversationFields } from '../ConversationFields';
-import { ActivityGroup, NoteCard, NoteComposer, NoteConfirm, PinnedNote, formatNoteTime } from './notes/EmailNotes';
+import { ActivityGroup, NoteCard, NoteComposer, NoteConfirm, PinnedNote, StickyPinnedNote, formatNoteTime } from './notes/EmailNotes';
 
 // Icons
 import titleUnread from '../assets/icons/title-unreaed.svg';
@@ -241,33 +241,39 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
         </div>
       </div>
 
+      {/* Subject Bar (stays put; the thread scrolls under it) */}
+      <div className="subject-bar-detail">
+        <h1 className="subject-text-large">{conversation.subject}</h1>
+        <div className="subject-actions">
+           <button className="icon-btn" onClick={(e) => handleReplyAll(e, expandedIds[0] || (conversation.messages.length > 0 ? conversation.messages[0].id : null))}>
+             <img src={replyIcon} alt="Reply" width="16" height="16" />
+           </button>
+           <button className="icon-btn" onClick={(e) => handleReplyAll(e, expandedIds[0])}>
+             <img src={replyAllIcon} alt="Reply All" width="16" height="16" />
+           </button>
+           <button className="icon-btn">
+             <img src={forwardIcon} alt="Forward" width="16" height="16" />
+           </button>
+           <ConversationMenu
+             options={EMAIL_MENU}
+             onlyNotes={onlyNotes}
+             onSelect={(value) => {
+               const last = conversation.messages[conversation.messages.length - 1]?.id;
+               if (value === VIEW_ONLY_NOTES.value) setOnlyNotes((on) => !on);
+               else if (value === 'reply' || value === 'reply-all') setActiveReplyId(last);
+             }}
+           />
+        </div>
+      </div>
+      {/* The pinned note stays at the top once it scrolls out of view */}
+      <StickyPinnedNote
+        note={pinned}
+        scrollRef={scrollRef}
+        onGoTo={() => scrollToNote(pinned.id)}
+        onReply={() => openComposer({ mode: 'reply', noteId: pinned.id })}
+      />
       {/* Scrollable Area */}
       <div className="detail-scroll-area" ref={scrollRef}>
-        {/* Subject Bar */}
-        <div className="subject-bar-detail">
-          <h1 className="subject-text-large">{conversation.subject}</h1>
-          <div className="subject-actions">
-             <button className="icon-btn" onClick={(e) => handleReplyAll(e, expandedIds[0] || (conversation.messages.length > 0 ? conversation.messages[0].id : null))}>
-               <img src={replyIcon} alt="Reply" width="16" height="16" />
-             </button>
-             <button className="icon-btn" onClick={(e) => handleReplyAll(e, expandedIds[0])}>
-               <img src={replyAllIcon} alt="Reply All" width="16" height="16" />
-             </button>
-             <button className="icon-btn">
-               <img src={forwardIcon} alt="Forward" width="16" height="16" />
-             </button>
-             <ConversationMenu
-               options={EMAIL_MENU}
-               onlyNotes={onlyNotes}
-               onSelect={(value) => {
-                 const last = conversation.messages[conversation.messages.length - 1]?.id;
-                 if (value === VIEW_ONLY_NOTES.value) setOnlyNotes((on) => !on);
-                 else if (value === 'reply' || value === 'reply-all') setActiveReplyId(last);
-               }}
-             />
-          </div>
-        </div>
-  
         {/* Messages Container */}
         <div className="messages-container">
           {pinned && <PinnedNote by={thread.pin.by}>{renderNote(pinned, 'pin')}</PinnedNote>}

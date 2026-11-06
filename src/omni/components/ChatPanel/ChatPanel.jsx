@@ -379,6 +379,7 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
         <ConversationMenu className="chat-panel__menu" options={[VIEW_ONLY_NOTES]} onlyNotes={onlyNotes} onSelect={() => setOnlyNotes((on) => !on)} />
       </div>
 
+      {notes.sticky}
       <div className="chat-panel__thread" ref={threadRef}>
         {notes.pinned}
         {onlyNotes && (notes.notes.length

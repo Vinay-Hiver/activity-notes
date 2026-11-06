@@ -1,7 +1,7 @@
 import React from 'react';
 import { useCurrentUser } from '../../CurrentUser';
 import { useEmailNotes } from '../../EmailNotesStore';
-import { NoteCard, NoteConfirm, PinnedNote, formatNoteTime } from './EmailNotes';
+import { NoteCard, NoteConfirm, PinnedNote, StickyPinnedNote, formatNoteTime } from './EmailNotes';
 
 /**
  * Notes in a real-time channel's thread (Chat, Slack, WhatsApp, SMS), with the same cards and actions
@@ -95,6 +95,15 @@ export function useNotesThread(convoId, { onReply, onEdit, scrollRef }) {
 
   const pinnedNote = thread.pin ? find(thread.pin.id) : null;
   const pinned = pinnedNote ? <PinnedNote by={thread.pin.by}>{renderNote(pinnedNote, 'pin')}</PinnedNote> : null;
+  // Render just before the scroller: the pinned note held at the top once its copy scrolls away.
+  const sticky = (
+    <StickyPinnedNote
+      note={pinnedNote}
+      scrollRef={scrollRef}
+      onGoTo={() => scrollToNote(pinnedNote.id)}
+      onReply={() => onReply(pinnedNote)}
+    />
+  );
 
   const dialogs = (
     <>
@@ -121,5 +130,5 @@ export function useNotesThread(convoId, { onReply, onEdit, scrollRef }) {
     </>
   );
 
-  return { notes: thread.notes, add, edit, find, renderNote, pinned, dialogs, scrollToNote };
+  return { notes: thread.notes, add, edit, find, renderNote, pinned, sticky, dialogs, scrollToNote };
 }

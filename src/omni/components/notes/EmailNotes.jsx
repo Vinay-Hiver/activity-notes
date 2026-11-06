@@ -304,6 +304,74 @@ export function PinnedNote({ by, children }) {
   );
 }
 
+/**
+ * The pinned note, kept at the top of the thread once its own copy has scrolled out of view
+ * (Figma: Activity - Notes › 86:24707 closed, 86:25469 open). Place it just before the scroller:
+ * `scrollRef` is the thread's scroller, which holds the PinnedNote it stands in for.
+ * The chevron opens and closes it; a click anywhere else closes it.
+ */
+export function StickyPinnedNote({ note, scrollRef, onGoTo, onReply }) {
+  const { user } = useCurrentUser();
+  const [shown, setShown] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef(null);
+
+  // Shown while the pinned copy is above the top of the scroller.
+  React.useEffect(() => {
+    const root = scrollRef.current;
+    if (!root || !note) { setShown(false); return undefined; }
+    const check = () => {
+      const pinned = root.querySelector('.en-pinned');
+      const past = !!pinned && pinned.getBoundingClientRect().bottom <= root.getBoundingClientRect().top;
+      setShown(past);
+      if (!past) setOpen(false);
+    };
+    check();
+    root.addEventListener('scroll', check, { passive: true });
+    window.addEventListener('resize', check);
+    return () => { root.removeEventListener('scroll', check); window.removeEventListener('resize', check); };
+  }, [scrollRef, note]);
+
+  React.useEffect(() => {
+    if (!open) return undefined;
+    const onDown = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
+  }, [open]);
+
+  if (!note || !shown) return null;
+  const act = (fn) => () => { setOpen(false); fn(); };
+  return (
+    <div className="en-sticky-pin">
+      <div ref={ref} className={`en-sticky-pin__card${open ? ' is-open' : ''}`}>
+        <button type="button" className="en-sticky-pin__head" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+          <Icon name="pin" size={14} />
+          <span className="en-sticky-pin__line">
+            <span className="en-sticky-pin__author">{personLabel({ id: note.authorId, name: note.author }, user.id, { start: true })}</span>
+            {!open && <span className="en-sticky-pin__preview">: {note.body || 'Attachments'}</span>}
+          </span>
+          <span className="en-sticky-pin__time">{note.time}</span>
+          <Icon name={open ? 'chevrontop' : 'chevrondown'} size={14} />
+        </button>
+        {open && (
+          <div className="en-sticky-pin__body">
+            {note.body && <p className="en-sticky-pin__text"><MentionText text={note.body} /></p>}
+            {note.attachments?.length > 0 && (
+              <div className="en-attach-list">{note.attachments.map((f) => <AttachmentChip key={f.id} file={f} />)}</div>
+            )}
+            <div className="en-sticky-pin__actions">
+              <button type="button" className="en-sticky-pin__link" onClick={act(onGoTo)}><Icon name="newtab" size={14} />Go to note</button>
+              <button type="button" className="en-sticky-pin__link" onClick={act(onReply)}><Icon name="reply" size={14} />Reply to note</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ---------- @mentions (shared by the email note composer and the real-time channel composer) ---------- */
 
 /**

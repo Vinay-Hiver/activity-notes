@@ -79,6 +79,24 @@
 .en-pinned__by { display: flex; align-items: center; gap: 6px; margin: 0; padding: 8px 4px 0; font-size: 12px; line-height: 18px; font-weight: var(--fontWeightMedium); color: var(--slateTextSubtle); }
 .en-pinned__by svg { width: 12px; height: 12px; }
 
+/* The pinned note held at the top of the thread once it scrolls away (Figma 86:24707 closed, 86:25469 open).
+   A 0-height anchor before the scroller; the card lies over the top of the thread. */
+.en-sticky-pin { position: relative; z-index: 5; flex: none; height: 0; }
+.en-sticky-pin__card { position: absolute; top: 0; left: 0; right: 0; display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-bottom: 1px solid var(--enNoteBorder); background: var(--enNoteSurface); font-family: var(--fontFamily); font-size: 13px; line-height: 20px; animation: en-sticky-in 160ms cubic-bezier(0.2, 0, 0, 1); }
+.en-sticky-pin__card.is-open { box-shadow: 0 10px 10px rgb(0 0 0 / 5%); }
+.en-sticky-pin__head { display: flex; align-items: center; gap: 8px; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; text-align: left; color: var(--slateTextSubtle); }
+.en-sticky-pin__line { display: flex; flex: 1; gap: 4px; min-width: 0; white-space: nowrap; }
+.en-sticky-pin__author { flex: none; font-weight: var(--fontWeightMedium); color: var(--slateTextBody); }
+.en-sticky-pin__preview { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--slateTextSubtle); }
+.en-sticky-pin__time { flex: none; white-space: nowrap; color: var(--slateTextSubtle); }
+.en-sticky-pin__body { display: flex; flex-direction: column; gap: 8px; }
+.en-sticky-pin__text { margin: 0; padding-left: 22px; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--slateTextBody); }
+.en-sticky-pin__body .en-attach-list { padding-left: 22px; }
+.en-sticky-pin__actions { display: flex; align-items: center; gap: 14px; padding: 8px 0 0 22px; border-top: 1px solid var(--enNoteBorder); }
+.en-sticky-pin__link { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; color: var(--primaryBorderDefault); }
+.en-sticky-pin__link:hover { text-decoration: underline; }
+@keyframes en-sticky-in { from { opacity: 0; transform: translateY(-4px); } }
+
 /* ---------- Attachments ---------- */
 .en-attach-list { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; padding-top: 8px; }
 .en-attach { display: flex; align-items: center; gap: 4px; max-width: 240px; padding: 4px; border: 1px solid var(--slateBorderLight); border-radius: 8px; background: var(--slateSurfaceSubtle); }
