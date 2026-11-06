@@ -54,27 +54,69 @@ export const conversationsData = [
     time: 'Feb 4, 11:30 AM',
     subject: 'Refund status',
     preview: 'Has the refund been processed yet?',
-    threadCount: 2,
+    threadCount: 6,
     messages: [
       {
         id: 'm1',
         sender: 'Alice Johnson',
         email: 'alice.j@outlook.com',
-        time: 'Feb 4, 10:00 AM',
         initial: 'A',
         avatarColor: 'var(--pastelVioletBorderDefault)',
-        body: 'Hello,\n\nI requested a refund last week but haven\'t seen it in my account yet. Any updates?'
+        time: 'Feb 2, 09:15 AM',
+        body: 'Hello,\n\nI cancelled my subscription on Jan 28, before the renewal date, but my card was still charged $249 on Feb 1. Could you please refund it?'
       },
       {
         id: 'm2',
         sender: 'Ruben Geidt',
         email: 'ruben@acme.com',
-        time: 'Feb 4, 11:30 AM',
         initial: 'R',
         avatarColor: 'var(--pastelLightBlueBorderDefault)',
+        time: 'Feb 2, 11:40 AM',
+        body: 'Hi Alice,\n\nSorry about that. Could you share the order number and the last four digits of the card that was charged?'
+      },
+      {
+        id: 'm3',
+        sender: 'Alice Johnson',
+        email: 'alice.j@outlook.com',
+        initial: 'A',
+        avatarColor: 'var(--pastelVioletBorderDefault)',
+        time: 'Feb 2, 01:05 PM',
+        body: 'Sure, the order number is #48213 and the card ends in 4417.'
+      },
+      {
+        id: 'm4',
+        sender: 'Ruben Geidt',
+        email: 'ruben@acme.com',
+        initial: 'R',
+        avatarColor: 'var(--pastelLightBlueBorderDefault)',
+        time: 'Feb 3, 10:20 AM',
+        body: 'Thanks Alice,\n\nI\'ve raised refund request REF-2291 with our billing team. I\'ll update you as soon as it\'s approved.'
+      },
+      {
+        id: 'm5',
+        sender: 'Alice Johnson',
+        email: 'alice.j@outlook.com',
+        initial: 'A',
+        avatarColor: 'var(--pastelVioletBorderDefault)',
+        time: 'Feb 4, 10:00 AM',
+        body: 'Hello,\n\nI requested a refund last week but haven\'t seen it in my account yet. Any updates?'
+      },
+      {
+        id: 'm6',
+        sender: 'Ruben Geidt',
+        email: 'ruben@acme.com',
+        initial: 'R',
+        avatarColor: 'var(--pastelLightBlueBorderDefault)',
+        time: 'Feb 4, 11:30 AM',
         body: 'Hi Alice,\n\nI\'ve checked the status and the refund was approved yesterday. It should appear in your account within 3-5 business days.'
       }
-    ]
+    ],
+    // Notes already in the thread, each after the message it names (on top of the usual first note)
+    notes: [
+      { id: 'seed-2-a', after: 'm3', authorId: 'jim', author: 'Jim Halpert', initial: 'J', color: 'lightBlue', time: 'Feb 2, 01:30 PM', body: 'Confirmed the cancellation went through on Jan 28, so this renewal charge should not have happened. @Michael Scott raising it with billing.' },
+      { id: 'seed-2-b', after: 'm4', authorId: 'michael', author: 'Michael Scott', initial: 'M', color: 'red', time: 'Feb 3, 10:45 AM', body: 'Billing says refunds over $200 need a sign-off from finance. REF-2291 is $249, so it is queued with them.' },
+      { id: 'seed-2-c', after: 'm5', authorId: 'jim', author: 'Jim Halpert', initial: 'J', color: 'lightBlue', time: 'Feb 4, 10:20 AM', body: 'Finance approved REF-2291 yesterday. Replying to Alice with the 3-5 business day timeline.' },
+    ],
   },
 
   // --- Email: Unassigned (2) ---

@@ -24,16 +24,18 @@ import smallReplyIcon from '../assets/icons/small-reply.svg';
 import smallForwardIcon from '../assets/icons/small-forward.svg';
 import chevronDownIcon from '../assets/icons/s-chevron-down.svg';
 
-// Every email thread starts with one note from Michael after the first message.
+// Every email thread starts with one note from Michael after the first message, then any notes the
+// conversation's data has (each with `after`, the id of the message it follows).
 const seedNotes = (conversation) => [{
   id: `seed-${conversation.id}`,
+  after: conversation.messages[0]?.id,
   authorId: 'michael',
   author: 'Michael Scott',
   initial: 'M',
   color: 'red',
   time: conversation.messages[0]?.time,
   body: "Checked their account: this looks related to last week's billing change. @Jim Halpert can you confirm before we reply?",
-}];
+}, ...(conversation.notes ?? [])];
 
 // The ⋮ menu at the top right of an email (only "Reply", "Reply all" and "View only notes" do something here).
 const EMAIL_MENU = [
@@ -201,7 +203,10 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
     lastTime: conversation.messages[conversation.messages.length - 1]?.time,
   });
   const lastIndex = conversation.messages.length - 1;
-  const seedIds = new Set(seedNotes(conversation).map((n) => n.id));
+  const seeds = seedNotes(conversation);
+  const seedIds = new Set(seeds.map((n) => n.id));
+  // Which message each seeded note follows (looked up here, so an edited note keeps its place).
+  const seedAfter = new Map(seeds.map((n) => [n.id, n.after]));
   // New notes and right-panel activity, in the order they happened (all after the last message).
   const later = [
     ...thread.notes.filter((n) => !seedIds.has(n.id)).map((n) => ({ kind: 'note', at: n.at ?? 0, note: n })),
@@ -215,7 +220,9 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
    */
   const itemsAfter = (index) => {
     const items = [];
-    if (index === 0) items.push(...asActivity(activity.first), ...thread.notes.filter((n) => seedIds.has(n.id)).map((note) => ({ kind: 'note', note })));
+    if (index === 0) items.push(...asActivity(activity.first));
+    const msgId = conversation.messages[index].id;
+    items.push(...thread.notes.filter((n) => seedIds.has(n.id) && (seedAfter.get(n.id) ?? conversation.messages[0].id) === msgId).map((note) => ({ kind: 'note', note })));
     if (index === lastIndex) items.push(...asActivity(activity.last), ...later);
     return groupActivity(items);
   };
