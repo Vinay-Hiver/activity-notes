@@ -310,6 +310,17 @@ export function PinnedNote({ by, children }) {
  * `scrollRef` is the thread's scroller, which holds the PinnedNote it stands in for.
  * The chevron opens and closes it; a click anywhere else closes it.
  */
+/**
+ * Keeps what the reader sees in place while the scroller's content above it changes (a note pinned or
+ * unpinned adds or removes the pinned copy at the top). Call it before the change; it corrects the next frame.
+ */
+export function keepScrollPosition(el) {
+  if (!el) return;
+  const top = el.scrollTop;
+  const height = el.scrollHeight;
+  requestAnimationFrame(() => { el.scrollTop = top + el.scrollHeight - height; });
+}
+
 export function StickyPinnedNote({ note, scrollRef, onGoTo, onReply }) {
   const { user } = useCurrentUser();
   const [shown, setShown] = React.useState(false);

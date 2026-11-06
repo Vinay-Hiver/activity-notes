@@ -9,7 +9,7 @@ import { useCurrentUser } from '../CurrentUser';
 import { useEmailNotes } from '../EmailNotesStore';
 import { groupActivity, seedActivity } from './notes/threadTimeline';
 import { useConversationFields } from '../ConversationFields';
-import { ActivityGroup, NoteCard, NoteComposer, NoteConfirm, PinnedNote, StickyPinnedNote, formatNoteTime } from './notes/EmailNotes';
+import { ActivityGroup, NoteCard, NoteComposer, NoteConfirm, PinnedNote, StickyPinnedNote, formatNoteTime, keepScrollPosition } from './notes/EmailNotes';
 
 // Icons
 import titleUnread from '../assets/icons/title-unreaed.svg';
@@ -23,6 +23,15 @@ import kebabIcon from '../assets/icons/kebab-menu.svg';
 import smallReplyIcon from '../assets/icons/small-reply.svg';
 import smallForwardIcon from '../assets/icons/small-forward.svg';
 import chevronDownIcon from '../assets/icons/s-chevron-down.svg';
+
+// "Feb 2, 01:30 PM" as minutes, to put a thread's notes and activity in time order (0 if unreadable).
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const timeStamp = (time) => {
+  const m = /^(\w{3}) (\d+), (\d+):(\d+) (AM|PM)$/.exec(time ?? '');
+  if (!m) return 0;
+  const hour = (Number(m[3]) % 12) + (m[5] === 'PM' ? 12 : 0);
+  return ((MONTHS.indexOf(m[1]) * 31 + Number(m[2])) * 24 + hour) * 60 + Number(m[4]);
+};
 
 // Every email thread starts with one note from Michael after the first message, then any notes the
 // conversation's data has (each with `after`, the id of the message it follows).
@@ -80,8 +89,8 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
   }, [conversation]);
 
   const convoId = conversation ? String(conversation.id) : null;
-  const thread = (convoId && threads[convoId]) || (conversation ? { notes: seedNotes(conversation), pin: null } : null);
-  const updateThread = (fn) => setThreads((all) => ({ ...all, [convoId]: fn(all[convoId] || { notes: seedNotes(conversation), pin: null }) }));
+  const thread = (convoId && threads[convoId]) || (conversation ? { notes: seedNotes(conversation), pin: conversation.pin ?? null } : null);
+  const updateThread = (fn) => setThreads((all) => ({ ...all, [convoId]: fn(all[convoId] || { notes: seedNotes(conversation), pin: conversation.pin ?? null }) }));
   const findNote = (id) => thread?.notes.find((n) => n.id === id);
 
   const scrollToBottom = () => requestAnimationFrame(() => {
@@ -141,9 +150,10 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
     updateThread((t) => ({ notes: t.notes.filter((n) => n.id !== id), pin: t.pin?.id === id ? null : t.pin }));
   };
 
+  // The thread stays where it is: the new pinned copy goes in above, so the sticky bar shows it.
   const pinNote = (id) => {
+    keepScrollPosition(scrollRef.current);
     updateThread((t) => ({ ...t, pin: { id, by: { id: user.id, name: user.name } } }));
-    requestAnimationFrame(() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; });
   };
 
   // Only one note can be pinned: pinning another asks first.
@@ -222,7 +232,11 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
     const items = [];
     if (index === 0) items.push(...asActivity(activity.first));
     const msgId = conversation.messages[index].id;
-    items.push(...thread.notes.filter((n) => seedIds.has(n.id) && (seedAfter.get(n.id) ?? conversation.messages[0].id) === msgId).map((note) => ({ kind: 'note', note })));
+    // The data's own activity and the seeded notes after this message, in the order they happened.
+    items.push(...[
+      ...(conversation.activity ?? []).filter((row) => row.after === msgId).map((row) => ({ kind: 'activity', row, at: timeStamp(row.time) })),
+      ...thread.notes.filter((n) => seedIds.has(n.id) && (seedAfter.get(n.id) ?? conversation.messages[0].id) === msgId).map((note) => ({ kind: 'note', note, at: timeStamp(note.time) })),
+    ].sort((a, b) => a.at - b.at));
     if (index === lastIndex) items.push(...asActivity(activity.last), ...later);
     return groupActivity(items);
   };

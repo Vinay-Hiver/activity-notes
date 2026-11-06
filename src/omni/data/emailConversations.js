@@ -117,6 +117,20 @@ export const conversationsData = [
       { id: 'seed-2-b', after: 'm4', authorId: 'michael', author: 'Michael Scott', initial: 'M', color: 'red', time: 'Feb 3, 10:45 AM', body: 'Billing says refunds over $200 need a sign-off from finance. REF-2291 is $249, so it is queued with them.' },
       { id: 'seed-2-c', after: 'm5', authorId: 'jim', author: 'Jim Halpert', initial: 'J', color: 'lightBlue', time: 'Feb 4, 10:20 AM', body: 'Finance approved REF-2291 yesterday. Replying to Alice with the 3-5 business day timeline.' },
     ],
+    // Activity already in the thread, each after the message it names, in time order with the notes there.
+    // The right panel starts from the result (tags and fields below; status ends back at Open).
+    activity: [
+      { id: 'seed-2-act-1', after: 'm1', kind: 'tag-add', icon: 'tag', actor: { id: 'michael', name: 'Michael Scott' }, verb: 'applied Billing tag', time: 'Feb 2, 09:18 AM' },
+      { id: 'seed-2-act-2', after: 'm1', kind: 'tag-add', icon: 'tag', actor: { id: 'michael', name: 'Michael Scott' }, verb: 'applied Refund tag', time: 'Feb 2, 09:18 AM' },
+      { id: 'seed-2-act-3', after: 'm3', kind: 'field', icon: 'text', actor: { id: 'jim', name: 'Jim Halpert' }, verb: 'updated Order number to 48213', time: 'Feb 2, 01:32 PM' },
+      { id: 'seed-2-act-3b', after: 'm3', kind: 'field', icon: 'text', actor: { id: 'jim', name: 'Jim Halpert' }, verb: 'updated Plan name to Pro Annual', time: 'Feb 2, 01:33 PM' },
+      { id: 'seed-2-act-4', after: 'm4', kind: 'status', icon: 'flag', actor: { id: 'michael', name: 'Michael Scott' }, verb: 'changed status to Pending', time: 'Feb 3, 10:47 AM' },
+      { id: 'seed-2-act-5', after: 'm5', kind: 'status', icon: 'flag', actor: { id: 'jim', name: 'Jim Halpert' }, verb: 'changed status to Open', time: 'Feb 4, 10:05 AM' },
+    ],
+    // Pinned when the thread opens.
+    pin: { id: 'seed-2-b', by: { id: 'michael', name: 'Michael Scott' } },
+    tags: ['billing', 'refund'],
+    fields: { 'order-number': '48213', 'plan-name': 'Pro Annual' },
   },
 
   // --- Email: Unassigned (2) ---

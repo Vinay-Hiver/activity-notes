@@ -1,7 +1,7 @@
 import React from 'react';
 import { useCurrentUser } from '../../CurrentUser';
 import { useEmailNotes } from '../../EmailNotesStore';
-import { NoteCard, NoteConfirm, PinnedNote, StickyPinnedNote, formatNoteTime } from './EmailNotes';
+import { NoteCard, NoteConfirm, PinnedNote, StickyPinnedNote, formatNoteTime, keepScrollPosition } from './EmailNotes';
 
 /**
  * Notes in a real-time channel's thread (Chat, Slack, WhatsApp, SMS), with the same cards and actions
@@ -50,9 +50,10 @@ export function useNotesThread(convoId, { onReply, onEdit, scrollRef }) {
 
   const remove = (id) => update((t) => ({ notes: t.notes.filter((n) => n.id !== id), pin: t.pin?.id === id ? null : t.pin }));
 
+  // The thread stays where it is: the new pinned copy goes in above, so the sticky bar shows it.
   const pin = (id) => {
+    keepScrollPosition(scrollRef?.current);
     update((t) => ({ ...t, pin: { id, by: { id: user.id, name: user.name } } }));
-    requestAnimationFrame(() => { if (scrollRef?.current) scrollRef.current.scrollTop = 0; });
   };
 
   // Only one note can be pinned: pinning another asks first.

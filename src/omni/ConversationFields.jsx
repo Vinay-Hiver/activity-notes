@@ -39,6 +39,11 @@ const VIEW_BY_ID = Object.fromEntries([
   ...VOICE_CALLS.map((c) => [String(c.id), c.view]),
 ]);
 
+// Tags and custom fields an email's data sets itself (to match the activity already in its thread).
+const EMAIL_BY_ID = Object.fromEntries(conversationsData.map((c) => [String(c.id), c]));
+const defaultTags = (id) => EMAIL_BY_ID[String(id)]?.tags ?? defaultTagsFor(id);
+const defaultFields = (id) => ({ ...defaultCustomFieldsFor(id), ...EMAIL_BY_ID[String(id)]?.fields });
+
 const defaultAssignee = (id) => (VIEW_BY_ID[String(id)] === 'Unassigned' ? NONE : AGENTS[0].value);
 const defaultStatus = (id) => (VIEW_BY_ID[String(id)] === 'Closed' ? 'closed' : 'open');
 
@@ -46,7 +51,7 @@ const defaultStatus = (id) => (VIEW_BY_ID[String(id)] === 'Closed' ? 'closed' : 
 export const assigneeName = (value) => AGENTS.find((p) => p.value === value)?.label;
 
 /** The values a conversation starts with, before anyone changes them (its history in the thread). */
-export const initialFieldsOf = (id) => ({ assignee: defaultAssignee(id), status: defaultStatus(id), tags: defaultTagsFor(id) });
+export const initialFieldsOf = (id) => ({ assignee: defaultAssignee(id), status: defaultStatus(id), tags: defaultTags(id) });
 
 export function ConversationFieldsProvider({ children }) {
   const [assignees, setAssignees] = React.useState({}); // id -> assignee value, once changed
@@ -67,12 +72,12 @@ export function ConversationFieldsProvider({ children }) {
       statusOf: (id) => statuses[String(id)] ?? defaultStatus(id),
       setStatus: (id, next) => setStatuses((prev) => ({ ...prev, [String(id)]: next })),
       /** The tag values on the conversation. Every conversation starts with two (see data/tags.js). */
-      tagsOf: (id) => tags[String(id)] ?? defaultTagsFor(id),
+      tagsOf: (id) => tags[String(id)] ?? defaultTags(id),
       setTags: (id, next) => setTagsState((prev) => ({ ...prev, [String(id)]: next })),
       /** The custom field values on the conversation, keyed by field id (a missing key is empty). */
-      customFieldsOf: (id) => customFields[String(id)] ?? defaultCustomFieldsFor(id),
+      customFieldsOf: (id) => customFields[String(id)] ?? defaultFields(id),
       setCustomField: (id, fieldId, next) => setCustomFields((prev) => {
-        const current = prev[String(id)] ?? defaultCustomFieldsFor(id);
+        const current = prev[String(id)] ?? defaultFields(id);
         return { ...prev, [String(id)]: { ...current, [fieldId]: next } };
       }),
       /** The activity rows left by changes made in the right panel, oldest first. */
