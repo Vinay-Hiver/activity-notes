@@ -162,3 +162,5 @@
 .slack-composer-wrap .add-note-row { display: flex; margin-top: 12px; }
 /* Email's note composer in place of the reply box: no strip of its own around it */
 .slack-composer-wrap .en-composer-wrap { padding: 0; background: none; }
+/* "View only notes" bar: in line with the notes under it */
+.slack-thread > .en-notes-only { margin: 0 20px 6px; }

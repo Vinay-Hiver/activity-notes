@@ -4,7 +4,7 @@ import SkeletonText from './SkeletonText';
 import VoicePlayer from './VoicePlayer';
 import ConversationRightPanel from '../ConversationRightPanel';
 import { SAMPLE_TRANSCRIPT, VOICE_CALLS, callerLabel } from '../../data/voiceCalls';
-import { ActivityGroup, NoteComposer } from '../notes/EmailNotes';
+import { ActivityGroup, NoteComposer, NotesOnlyBar } from '../notes/EmailNotes';
 import { useNotesThread } from '../notes/useNotesThread';
 import ConversationMenu, { VIEW_ONLY_NOTES } from '../ConversationMenu';
 // The Note icon from Figma (Activity - Notes › 12:24260), used as it is.
@@ -180,6 +180,7 @@ export function CallDetail({ call, isEnded, isTranscriptReady, onEndCall }) {
 
       <div className="detail-content-area">
         {/* A pinned note sits above the call card (the conversation's first card), as in the other channels. */}
+        {onlyNotes && <NotesOnlyBar count={notes.notes.length} onExit={() => setOnlyNotes(false)} />}
         {notes.pinned && <div className="call-pinned">{notes.pinned}</div>}
         {onlyNotes ? (
           <div className="call-activity call-notes-only" ref={timelineRef}>

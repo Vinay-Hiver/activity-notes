@@ -415,3 +415,6 @@
 .add-note-row { display: flex; margin-top: 12px; }
 /* Email's note composer in place of the reply box: no strip of its own around it */
 .chat-panel__composer-wrap .en-composer-wrap { padding: 0; background: none; }
+
+/* "View only notes" bar: 8px above the first note */
+.chat-panel__thread > .en-notes-only { margin-bottom: 4px; }

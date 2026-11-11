@@ -7,7 +7,7 @@ import attachFileIcon from '../../icons/attach-file.svg';
 // The Note icon from Figma (Activity - Notes › 12:24260), used as it is.
 import noteIcon from '../../assets/icons/note.svg';
 import ConversationMenu, { VIEW_ONLY_NOTES } from '../ConversationMenu';
-import { ActivityGroup, AttachmentChip, NoteComposer } from '../notes/EmailNotes';
+import { ActivityGroup, AttachmentChip, NoteComposer, NotesOnlyBar } from '../notes/EmailNotes';
 import { useNotesThread } from '../notes/useNotesThread';
 import { groupActivity, seedActivity } from '../notes/threadTimeline';
 import { useConversationFields } from '../../ConversationFields';
@@ -235,6 +235,7 @@ export default function SlackChatPanel({ inboxName, conversation }) {
 
       {notes.sticky}
       <div className="slack-thread" ref={threadRef}>
+        {onlyNotes && <NotesOnlyBar count={notes.notes.length} onExit={() => setOnlyNotes(false)} />}
         {notes.pinned && <div className="slack-note slack-note--pinned">{notes.pinned}</div>}
         {onlyNotes && (notes.notes.length
           ? notes.notes.map((note) => <div key={note.id} className="slack-note slack-note--note">{notes.renderNote(note)}</div>)
@@ -261,7 +262,8 @@ export default function SlackChatPanel({ inboxName, conversation }) {
           />
         ) : (
           <>
-            <div className="slack-composer">
+            {/* Viewing only notes hides the reply box; Add note stays. */}
+            {!onlyNotes && <div className="slack-composer">
               <textarea
                 className="slack-composer__input"
                 placeholder="Shift + Enter for new line. Type ‘/’ to search for Slack templates and send quick replies"
@@ -276,7 +278,7 @@ export default function SlackChatPanel({ inboxName, conversation }) {
                 </div>
                 <button type="button" className="slack-composer__send" disabled={!text.trim()} onClick={send}>Send</button>
               </div>
-            </div>
+            </div>}
             {/* Email's Add note button, 12px under the reply box */}
             <div className="add-note-row">
               <button type="button" className="en-footer__btn" onClick={() => setNoteComposer({ mode: 'new' })}><img src={noteIcon} alt="" />Add note</button>

@@ -9,7 +9,7 @@ import { useCurrentUser } from '../CurrentUser';
 import { useEmailNotes } from '../EmailNotesStore';
 import { groupActivity, seedActivity } from './notes/threadTimeline';
 import { useConversationFields } from '../ConversationFields';
-import { ActivityGroup, NoteCard, NoteComposer, NoteConfirm, PinnedNote, StickyPinnedNote, formatNoteTime, keepScrollPosition } from './notes/EmailNotes';
+import { ActivityGroup, NoteCard, NoteComposer, NoteConfirm, PinnedNote, StickyPinnedNote, NotesOnlyBar, formatNoteTime, keepScrollPosition } from './notes/EmailNotes';
 
 // Icons
 import titleUnread from '../assets/icons/title-unreaed.svg';
@@ -297,6 +297,7 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
       <div className="detail-scroll-area" ref={scrollRef}>
         {/* Messages Container */}
         <div className="messages-container">
+          {onlyNotes && <NotesOnlyBar count={thread.notes.length} onExit={() => setOnlyNotes(false)} />}
           {pinned && <PinnedNote by={thread.pin.by}>{renderNote(pinned, 'pin')}</PinnedNote>}
           {onlyNotes && (thread.notes.length
             ? thread.notes.map((n) => renderNote(n))
@@ -393,7 +394,8 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
         />
       ) : (
         <div className="en-footer">
-          <button type="button" className="en-footer__btn" onClick={(e) => handleReplyAll(e, conversation.messages[lastIndex]?.id)}><Icon name="reply" size={16} />Reply</button>
+          {/* Viewing only notes leaves Add note alone: there is nothing to reply to. */}
+          {!onlyNotes && <button type="button" className="en-footer__btn" onClick={(e) => handleReplyAll(e, conversation.messages[lastIndex]?.id)}><Icon name="reply" size={16} />Reply</button>}
           <button type="button" className="en-footer__btn" onClick={() => openComposer({ mode: 'new' })}><img src={noteIcon} alt="" />Add note</button>
         </div>
       )}

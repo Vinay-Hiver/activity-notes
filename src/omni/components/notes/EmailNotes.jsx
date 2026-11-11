@@ -310,6 +310,16 @@ export function PinnedNote({ by, children }) {
  * `scrollRef` is the thread's scroller, which holds the PinnedNote it stands in for.
  * The chevron opens and closes it; a click anywhere else closes it.
  */
+/** The bar at the top of a thread while "View only notes" is on: how many notes, and the way back. */
+export function NotesOnlyBar({ count, onExit }) {
+  return (
+    <div className="en-notes-only">
+      <span>Viewing notes only • {count}</span>
+      <button type="button" className="en-notes-only__exit" onClick={onExit}>View full conversation</button>
+    </div>
+  );
+}
+
 /**
  * Keeps what the reader sees in place while the scroller's content above it changes (a note pinned or
  * unpinned adds or removes the pinned copy at the top). Call it before the change; it corrects the next frame.

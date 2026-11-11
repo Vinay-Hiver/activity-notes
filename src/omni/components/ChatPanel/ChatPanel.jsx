@@ -19,7 +19,7 @@ import TemplateModal from '../TemplateModal/TemplateModal';
 import TemplatePickerPopover from '../TemplateModal/TemplatePickerPopover';
 import TemplatePreviewCard from '../TemplateModal/TemplatePreview';
 import ConversationMenu, { VIEW_ONLY_NOTES } from '../ConversationMenu';
-import { ActivityGroup, AttachmentChip, NoteComposer } from '../notes/EmailNotes';
+import { ActivityGroup, AttachmentChip, NoteComposer, NotesOnlyBar } from '../notes/EmailNotes';
 import { useNotesThread } from '../notes/useNotesThread';
 import { groupActivity, seedActivity } from '../notes/threadTimeline';
 import { useConversationFields } from '../../ConversationFields';
@@ -381,6 +381,7 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
 
       {notes.sticky}
       <div className="chat-panel__thread" ref={threadRef}>
+        {onlyNotes && <NotesOnlyBar count={notes.notes.length} onExit={() => setOnlyNotes(false)} />}
         {notes.pinned}
         {onlyNotes && (notes.notes.length
           ? notes.notes.map((note) => <div key={note.id} className="chat-thread-item chat-thread-item--note">{notes.renderNote(note)}</div>)
@@ -418,7 +419,8 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
             />
           ) : (
             <>
-              {isBlocked ? (
+              {/* Viewing only notes hides the reply box; Add note stays. */}
+              {onlyNotes ? null : isBlocked ? (
                 <TwentyFourHourBlock onChooseTemplate={openTemplateModal} />
               ) : (
                 <div className="chat-composer">

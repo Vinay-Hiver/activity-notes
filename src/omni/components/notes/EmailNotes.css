@@ -164,3 +164,8 @@
 
 /* "View only notes" with no notes yet */
 .en-notes-empty { margin: 0; padding: 20px 12px; font-size: 14px; line-height: 20px; color: var(--slateTextSubtle); text-align: center; }
+
+/* "View only notes" bar at the top of the thread */
+.en-notes-only { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border: 1px solid var(--slateBorderLight); border-radius: 8px; background: var(--slateSurfaceWhite); font-size: 14px; line-height: 20px; color: var(--slateTextBody); }
+.en-notes-only__exit { padding: 0; border: 0; background: none; cursor: pointer; font: inherit; color: var(--primaryBorderDefault); white-space: nowrap; }
+.en-notes-only__exit:hover { text-decoration: underline; }
