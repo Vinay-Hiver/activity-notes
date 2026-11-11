@@ -228,7 +228,7 @@ export function ActivityGroup({ rows: events }) {
         <button type="button" className="en-activity__more" aria-expanded={false} onClick={() => setOpen(true)}>
           {rest > 0 ? `+${rest} more ${rest === 1 ? 'activity' : 'activities'}` : 'See more'}
         </button>
-        <span className="en-activity__time">{rows[rows.length - 1].time}</span>
+        {/* No time here: the line covers events at different times, so one time would mislead. */}
       </div>
     </div>
   );
