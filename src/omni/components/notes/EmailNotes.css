@@ -41,6 +41,11 @@
 .en-activity__time { flex: none; font-size: 12px; line-height: 18px; color: var(--slateTextSubtle); white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 120ms ease; }
 .en-activity__row:hover .en-activity__time { opacity: 1; }
 .en-activity__more { align-self: flex-start; padding: 0; border: 0; background: none; cursor: pointer; font-family: inherit; font-size: 13px; line-height: 18px; color: var(--primaryBorderDefault); }
+.en-activity__more:hover { text-decoration: underline; }
+/* The summary line keeps its link right after the text, and the time at the far right. */
+.en-activity__row--summary p { flex: 0 1 auto; }
+.en-activity__row--summary .en-activity__more { flex: none; white-space: nowrap; line-height: 20px; }
+.en-activity__row--summary .en-activity__time { margin-left: auto; }
 
 /* ---------- Note card ---------- */
 .en-note { box-sizing: border-box; display: flex; align-items: flex-start; gap: 12px; width: 100%; padding: 10px 12px; border: 1px solid var(--enNoteBorder); border-radius: 8px; background: var(--enNoteSurface); text-align: left; cursor: pointer; }

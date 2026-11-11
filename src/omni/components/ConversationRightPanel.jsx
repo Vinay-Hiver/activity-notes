@@ -47,14 +47,14 @@ export default function ConversationRightPanel({ conversationId, ...panelProps }
   const changeTags = (value) => {
     const before = tagsOf(id);
     setTags(id, value);
-    value.filter((v) => !before.includes(v)).forEach((v) => log('tag-add', { icon: 'tag', verb: `applied ${tagLabel(v)} tag` }));
-    before.filter((v) => !value.includes(v)).forEach((v) => log('tag-remove', { icon: 'tag', verb: `removed ${tagLabel(v)} tag` }));
+    value.filter((v) => !before.includes(v)).forEach((v) => log('tag-add', { icon: 'tag', verb: `applied ${tagLabel(v)} tag`, tag: tagLabel(v) }));
+    before.filter((v) => !value.includes(v)).forEach((v) => log('tag-remove', { icon: 'tag', verb: `removed ${tagLabel(v)} tag`, tag: tagLabel(v) }));
   };
 
   const changeCustomField = (fieldId, value) => {
     setCustomField(id, fieldId, value);
     const label = CUSTOM_FIELDS.find((f) => f.id === fieldId)?.label ?? fieldId;
-    log('field', { icon: 'text', verb: value ? `updated ${label} to ${value}` : `cleared ${label}` });
+    log('field', { icon: 'text', verb: value ? `updated ${label} to ${value}` : `cleared ${label}`, field: label, value });
   };
 
   return (

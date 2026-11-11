@@ -98,6 +98,66 @@ const IconBtn = ({ className = '', ...props }) => <button type="button" classNam
 
 /* ---------- Activity ---------- */
 
+// "Feb 2, 01:30 PM" as minutes, to put a thread's notes and activity in time order (0 if unreadable).
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+export const timeStamp = (time) => {
+  const m = /^(\w{3}) (\d+), (\d+):(\d+) (AM|PM)$/.exec(time ?? '');
+  if (!m) return 0;
+  const hour = (Number(m[3]) % 12) + (m[5] === 'PM' ? 12 : 0);
+  return ((MONTHS.indexOf(m[1]) * 31 + Number(m[2])) * 24 + hour) * 60 + Number(m[4]);
+};
+
+// Events by the same person, of the same kind, each within this long of the one before, read as one line.
+// Kept short because activity is the audit log: nothing is dropped, only quick repeats are written together.
+const MERGE_MINUTES = 1;
+const minutesOf = (row) => (row.at != null ? row.at / 60000 : timeStamp(row.time));
+const sameRun = (a, b) => a.kind === b.kind && a.actor?.id === b.actor?.id && Math.abs(minutesOf(b) - minutesOf(a)) <= MERGE_MINUTES;
+
+/** "A", "A and B", "A, B and C", "A, B, C and 2 more". */
+const listOf = (items) => {
+  if (items.length === 1) return items[0];
+  if (items.length <= 3) return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+  return `${items.slice(0, 3).join(', ')} and ${items.length - 3} more`;
+};
+
+// How a run of two or more events of one kind reads. Only these kinds merge: status and assignee
+// changes always get their own row, so every step stays in the log.
+const MERGE_BY_KIND = {
+  'tag-add': (run) => `applied ${listOf(run.map((r) => r.tag))} tags`,
+  'tag-remove': (run) => `removed ${listOf(run.map((r) => r.tag))} tags`,
+  field: (run) => {
+    let prevUpdate = false;
+    return listOf(run.map((r) => {
+      const part = r.value ? `${prevUpdate ? '' : 'updated '}${r.field} to ${r.value}` : `cleared ${r.field}`;
+      prevUpdate = !!r.value;
+      return part;
+    }));
+  },
+};
+
+// The value a row names (a tag or a field), so a run never names the same one twice.
+const subjectOf = (row) => (row.kind === 'field' ? row.field : row.tag);
+
+/**
+ * Writes quick repeats as one row before grouping: the same person doing the same kind of thing, each
+ * within MERGE_MINUTES of the one before ("You applied Billing and Refund tags"). Every event stays:
+ * a tag applied and then removed shows both, and a field changed twice starts a new row.
+ * Each row keeps `count`, the events it stands for.
+ */
+export function mergeActivity(rows) {
+  const runs = [];
+  rows.forEach((row) => {
+    const run = runs[runs.length - 1];
+    const canMerge = run && MERGE_BY_KIND[row.kind] && subjectOf(row) && sameRun(run[run.length - 1], row)
+      && !run.some((r) => subjectOf(r) === subjectOf(row));
+    if (canMerge) run.push(row);
+    else runs.push([row]);
+  });
+  return runs.map((run) => (run.length === 1
+    ? { ...run[0], count: 1 }
+    : { ...run[run.length - 1], id: run[0].id, verb: MERGE_BY_KIND[run[0].kind](run), count: run.length }));
+}
+
 // How a group sums up each kind of event, for `n` events of that kind.
 const SUMMARY_BY_KIND = {
   'tag-add': (n) => (n === 1 ? '1 tag added' : `${n} tags added`),
@@ -118,8 +178,8 @@ function summarize(rows) {
   const counts = [];
   rows.forEach((row) => {
     const entry = counts.find((c) => c.kind === row.kind);
-    if (entry) entry.n += 1;
-    else counts.push({ kind: row.kind, n: 1 });
+    if (entry) entry.n += row.count ?? 1;
+    else counts.push({ kind: row.kind, n: row.count ?? 1 });
   });
   const named = counts.slice(0, 2);
   const rest = counts.slice(2).reduce((sum, c) => sum + c.n, 0);
@@ -135,9 +195,12 @@ function summarize(rows) {
  * One event shows as its own row. More fold into a summary line with "+ N more" or "See more" under it;
  * opening it lists every event, with "See less".
  */
-export function ActivityGroup({ rows }) {
+export function ActivityGroup({ rows: events }) {
   const { user } = useCurrentUser();
   const [open, setOpen] = React.useState(false);
+  // Quick repeats read as one row first; a single row left needs no summary.
+  const rows = mergeActivity(events);
+  if (rows.length === 0) return null;
   const row = (r) => (
     <div key={r.id} className="en-activity__row">
       {typeof r.icon === 'string' ? <Icon name={r.icon} size={14} /> : r.icon}
@@ -154,19 +217,19 @@ export function ActivityGroup({ rows }) {
       </div>
     );
   }
-  // The summary line, then the link that opens the group under it: "+ N more" for the events the
-  // line doesn't name, or "See more" when it names them all.
+  // The summary line, then the link that opens the group under it: "+ N more activities" for the events
+  // the line doesn't name, or "See more" when it names them all.
   const { lead, rest } = summarize(rows);
   return (
     <div className="en-activity">
-      <div className="en-activity__row">
+      <div className="en-activity__row en-activity__row--summary">
         <Icon name="layering" size={14} />
         <p>{lead}</p>
+        <button type="button" className="en-activity__more" aria-expanded={false} onClick={() => setOpen(true)}>
+          {rest > 0 ? `+${rest} more ${rest === 1 ? 'activity' : 'activities'}` : 'See more'}
+        </button>
         <span className="en-activity__time">{rows[rows.length - 1].time}</span>
       </div>
-      <button type="button" className="en-activity__more" aria-expanded={false} onClick={() => setOpen(true)}>
-        {rest > 0 ? `+${rest} more` : 'See more'}
-      </button>
     </div>
   );
 }

@@ -9,7 +9,7 @@ import { useCurrentUser } from '../CurrentUser';
 import { useEmailNotes } from '../EmailNotesStore';
 import { groupActivity, seedActivity } from './notes/threadTimeline';
 import { useConversationFields } from '../ConversationFields';
-import { ActivityGroup, NoteCard, NoteComposer, NoteConfirm, PinnedNote, StickyPinnedNote, NotesOnlyBar, formatNoteTime, keepScrollPosition } from './notes/EmailNotes';
+import { ActivityGroup, NoteCard, NoteComposer, NoteConfirm, PinnedNote, StickyPinnedNote, NotesOnlyBar, formatNoteTime, keepScrollPosition, timeStamp } from './notes/EmailNotes';
 
 // Icons
 import titleUnread from '../assets/icons/title-unreaed.svg';
@@ -23,15 +23,6 @@ import kebabIcon from '../assets/icons/kebab-menu.svg';
 import smallReplyIcon from '../assets/icons/small-reply.svg';
 import smallForwardIcon from '../assets/icons/small-forward.svg';
 import chevronDownIcon from '../assets/icons/s-chevron-down.svg';
-
-// "Feb 2, 01:30 PM" as minutes, to put a thread's notes and activity in time order (0 if unreadable).
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const timeStamp = (time) => {
-  const m = /^(\w{3}) (\d+), (\d+):(\d+) (AM|PM)$/.exec(time ?? '');
-  if (!m) return 0;
-  const hour = (Number(m[3]) % 12) + (m[5] === 'PM' ? 12 : 0);
-  return ((MONTHS.indexOf(m[1]) * 31 + Number(m[2])) * 24 + hour) * 60 + Number(m[4]);
-};
 
 // Every email thread starts with one note from Michael after the first message, then any notes the
 // conversation's data has (each with `after`, the id of the message it follows).
