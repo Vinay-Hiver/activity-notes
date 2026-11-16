@@ -10,7 +10,7 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
 }
 
 /* ---- Connector bar ---- */
@@ -149,7 +149,7 @@
   position: relative;
   width: 100%; box-sizing: border-box; display: flex; align-items: center;
   transition: background-color 0.15s ease;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
 }
 .rp-section__header:hover { background-color: var(--slateSurfaceSubtle100, #f1f5f9); }
 

@@ -7,7 +7,7 @@
   gap: 6px;
   border: 1px solid transparent;
   border-radius: 6px;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;

@@ -1,11 +1,37 @@
-/* HOT Design System typography — mirrors the Figma text styles (Hanken Grotesk). */
-@import '@fontsource/hanken-grotesk/400.css';
-@import '@fontsource/hanken-grotesk/500.css';
+/* HOT Design System typography — mirrors the Figma text styles (Inter). Class names follow the style names: body/md/medium → .text-body-md-medium. */
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
 
 :root {
-  --fontFamily: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fontFamily: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --fontWeightRegular: 400;
   --fontWeightMedium: 500;
+  --fontWeightSemibold: 600;
+
+  /* One variable per Figma text style (weight, size/line-height, family). Use `font: var(--text-body-md-medium)` in CSS. */
+  --text-body-xs-regular: var(--fontWeightRegular) 12px/18px var(--fontFamily);
+  --text-body-sm-regular: var(--fontWeightRegular) 13px/19px var(--fontFamily);
+  --text-body-md-regular: var(--fontWeightRegular) 14px/20px var(--fontFamily);
+  --text-body-lg-regular: var(--fontWeightRegular) 16px/24px var(--fontFamily);
+  --text-body-xs-medium: var(--fontWeightMedium) 12px/18px var(--fontFamily);
+  --text-body-sm-medium: var(--fontWeightMedium) 13px/19px var(--fontFamily);
+  --text-body-md-medium: var(--fontWeightMedium) 14px/20px var(--fontFamily);
+  --text-body-lg-medium: var(--fontWeightMedium) 16px/24px var(--fontFamily);
+  --text-body-xl-medium: var(--fontWeightMedium) 18px/28px var(--fontFamily);
+  --text-body-2xl-medium: var(--fontWeightMedium) 20px/30px var(--fontFamily);
+  --text-body-xs-semibold: var(--fontWeightSemibold) 12px/18px var(--fontFamily);
+  --text-body-sm-semibold: var(--fontWeightSemibold) 13px/19px var(--fontFamily);
+  --text-body-md-semibold: var(--fontWeightSemibold) 14px/20px var(--fontFamily);
+  --text-body-lg-semibold: var(--fontWeightSemibold) 16px/24px var(--fontFamily);
+  --text-heading-sm: var(--fontWeightSemibold) 16px/22px var(--fontFamily);
+  --text-heading-md: var(--fontWeightSemibold) 18px/28px var(--fontFamily);
+  --text-heading-lg: var(--fontWeightSemibold) 20px/28px var(--fontFamily);
+  --text-display-md: var(--fontWeightSemibold) 24px/32px var(--fontFamily);
+  --text-display-lg: var(--fontWeightSemibold) 28px/36px var(--fontFamily);
+  --text-caption-regular: var(--fontWeightRegular) 12px/14px var(--fontFamily);
+  --text-caption-medium: var(--fontWeightMedium) 12px/14px var(--fontFamily);
+  --text-overline: var(--fontWeightMedium) 12px/14px var(--fontFamily);
 }
 
 body {
@@ -14,19 +40,33 @@ body {
 }
 
 /* Body — Regular */
-.text-body-xsmall { font: var(--fontWeightRegular) 12px/18px var(--fontFamily); }
-.text-body-small  { font: var(--fontWeightRegular) 14px/20px var(--fontFamily); }
-.text-body-medium { font: var(--fontWeightRegular) 16px/24px var(--fontFamily); }
-.text-body-large  { font: var(--fontWeightRegular) 18px/28px var(--fontFamily); }
+.text-body-xs-regular { font: var(--text-body-xs-regular); }
+.text-body-sm-regular { font: var(--text-body-sm-regular); }
+.text-body-md-regular { font: var(--text-body-md-regular); }
+.text-body-lg-regular { font: var(--text-body-lg-regular); }
 
-/* Label — Medium */
-.text-label-xsmall { font: var(--fontWeightMedium) 12px/18px var(--fontFamily); }
-.text-label-small  { font: var(--fontWeightMedium) 14px/20px var(--fontFamily); }
-.text-label-medium { font: var(--fontWeightMedium) 16px/24px var(--fontFamily); }
-.text-label-large  { font: var(--fontWeightMedium) 18px/28px var(--fontFamily); }
+/* Body — Medium */
+.text-body-xs-medium  { font: var(--text-body-xs-medium); }
+.text-body-sm-medium  { font: var(--text-body-sm-medium); }
+.text-body-md-medium  { font: var(--text-body-md-medium); }
+.text-body-lg-medium  { font: var(--text-body-lg-medium); }
+.text-body-xl-medium  { font: var(--text-body-xl-medium); }
+.text-body-2xl-medium { font: var(--text-body-2xl-medium); }
 
-/* Heading — Medium */
-.text-heading-h4 { font: var(--fontWeightMedium) 20px/24px var(--fontFamily); }
-.text-heading-h3 { font: var(--fontWeightMedium) 24px/28px var(--fontFamily); }
-.text-heading-h2 { font: var(--fontWeightMedium) 30px/36px var(--fontFamily); }
-.text-heading-h1 { font: var(--fontWeightMedium) 36px/44px var(--fontFamily); }
+/* Body — Semi Bold */
+.text-body-xs-semibold { font: var(--text-body-xs-semibold); }
+.text-body-sm-semibold { font: var(--text-body-sm-semibold); }
+.text-body-md-semibold { font: var(--text-body-md-semibold); }
+.text-body-lg-semibold { font: var(--text-body-lg-semibold); }
+
+/* Heading and display — Semi Bold */
+.text-heading-sm { font: var(--text-heading-sm); }
+.text-heading-md { font: var(--text-heading-md); }
+.text-heading-lg { font: var(--text-heading-lg); }
+.text-display-md { font: var(--text-display-md); }
+.text-display-lg { font: var(--text-display-lg); }
+
+/* Caption and overline */
+.text-caption-regular { font: var(--text-caption-regular); }
+.text-caption-medium  { font: var(--text-caption-medium); }
+.text-overline        { font: var(--text-overline); letter-spacing: 0.08px; }

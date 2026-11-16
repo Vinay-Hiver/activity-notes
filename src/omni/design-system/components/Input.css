@@ -10,7 +10,7 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-weight: 500;
   font-size: 14px;
   line-height: 20px;
@@ -55,7 +55,7 @@
   border: 0;
   outline: none;
   background: transparent;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
@@ -78,7 +78,7 @@
 /* Helper / error text */
 .ds-input__helper {
   margin: 0;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;

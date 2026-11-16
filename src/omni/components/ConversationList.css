@@ -59,7 +59,7 @@
 }
 
 .subject-title {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 16px;
   font-weight: 500;
   color: #334155;
@@ -142,7 +142,7 @@
 }
 
 .avatar-text {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 10px;
   font-weight: 500;
   color: white;
@@ -152,7 +152,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 15px;
   color: #334155;
   white-space: nowrap;
@@ -184,7 +184,7 @@
 }
 
 .card-time {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 13px;
   color: #64758b;
   white-space: nowrap;
@@ -204,7 +204,7 @@
 }
 
 .subject-text {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 14px;
   font-weight: 400;
   color: #334155;
@@ -229,7 +229,7 @@
 }
 
 .preview-text {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 14px;
   color: #64758b;
   margin: 0;
@@ -249,7 +249,7 @@
   height: 18px;
   padding: 0 8px;
   border-radius: 4px;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 13px;
   font-weight: 500;
   display: flex;

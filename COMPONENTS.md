@@ -429,7 +429,7 @@ Use them as `var(--<family><Role><Variant>)`, for example `var(--slateTextBody)`
 - indigo — Text: Title/Body/Subtle/Caption/Disabled; Surface: Default/Subtle/Dark/Disabled; Border: Default/Dark/Light
 - pastelViolet, pastelLightBlue, pastelRed, pastelPurple, pastelOrange, pastelYellow, pastelGreen — the accent colours; each has Surface, Text and Border in the same variants as above
 
-Fonts: Hanken Grotesk 400 and 500, already set on the page. Text sizes in use: 12/18, 14/20, 16/24 (size/line-height).
+Fonts: Inter 400, 500 and 600, already set on the page. Text classes follow the Figma style names, for example `.text-body-md-medium` (14/20) and `.text-heading-lg` (20/28); each also exists as a CSS variable for components, for example `font: var(--text-body-md-medium)`. The full list is in `src/tokens/typography.css`.
 
 ## Page recipes
 

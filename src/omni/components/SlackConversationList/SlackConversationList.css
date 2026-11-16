@@ -10,7 +10,7 @@
   background: var(--slateSurfaceWhite, #fff);
   border-right: 1px solid var(--slateBorderLight);
   overflow-y: auto;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
 }
 
 .slack-list__header {

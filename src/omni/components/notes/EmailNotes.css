@@ -17,7 +17,7 @@
 :where(.en-activity, .en-note, .en-pinned, .en-footer, .en-composer-wrap) * { box-sizing: border-box; }
 
 /* ---------- Avatar (32px, as in the reference) ---------- */
-.en-avatar { display: flex; flex: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 90px; font: var(--fontWeightMedium) 15px/1 'Inter', var(--fontFamily); color: var(--slateSurfaceWhite); }
+.en-avatar { display: flex; flex: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 90px; font: var(--fontWeightMedium) 15px/1 var(--fontFamily); color: var(--slateSurfaceWhite); }
 .en-avatar--lightBlue { background: var(--pastelLightBlueBorderDefault); }
 .en-avatar--orange { background: var(--pastelOrangeBorderDefault); }
 .en-avatar--green { background: var(--pastelGreenSurfaceDefault); }

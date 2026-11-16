@@ -13,7 +13,7 @@
     "@dnd-kit/modifiers": "^9.0.0",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
-    "@fontsource/hanken-grotesk": "^5.3.0",
+    "@fontsource/inter": "^5.3.0",
     "@tiptap/core": "^3.32.0",
     "@tiptap/extension-color": "^3.32.0",
     "@tiptap/extension-font-family": "^3.32.0",

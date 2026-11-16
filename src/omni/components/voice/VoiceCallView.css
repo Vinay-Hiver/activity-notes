@@ -505,14 +505,14 @@
   font-size: 14px;
   font-weight: 500;
   color: #334155;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
 }
 
 .active-call-page .card-time {
   font-size: 12px;
   font-weight: 500;
   color: #64758b;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
 }
 
 .active-call-page .card-body p {
@@ -521,7 +521,7 @@
   color: #64758b;
   margin: 0;
   line-height: 20px;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
 }
 
 .active-call-page /* Animations */

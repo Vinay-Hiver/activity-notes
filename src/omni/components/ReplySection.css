@@ -37,7 +37,7 @@
   padding: 6px 10px;
   background-color: #334155;
   color: white;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 12px;
   border-radius: 6px;
   white-space: nowrap;
@@ -99,7 +99,7 @@
   color: #334155;
   cursor: pointer;
   transition: background 0.2s;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   text-align: left;
   display: flex;
   align-items: center;
@@ -167,7 +167,7 @@
 
 .sig-preview-body {
   padding: 12px;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 14px;
   color: #334155;
   line-height: 1.5;
@@ -208,7 +208,7 @@
 }
 
 .reply-type-text {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 14px;
   color: #334155;
   font-weight: 400;
@@ -231,7 +231,7 @@
 }
 
 .recipients-label {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 14px;
   color: #64758b;
   margin-top: 2px;
@@ -252,7 +252,7 @@
   padding: 2px 8px;
   border-radius: 4px;
   width: fit-content;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 14px;
   color: #334155;
 }
@@ -273,7 +273,7 @@
 .recipients-right {
   display: flex;
   gap: 12px;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 13px;
   color: #64758b;
   margin-top: 2px;
@@ -295,7 +295,7 @@
 
 .reply-tiptap-content .ProseMirror {
   min-height: 150px;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 14px;
   line-height: 1.5;
   color: #334155;
@@ -347,7 +347,7 @@
   padding: 4px 8px;
   background-color: #f1f5f9;
   border-radius: 4px;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 13px;
   font-weight: 500;
   color: #334155;
@@ -433,7 +433,7 @@
   border: none;
   padding: 6px 16px;
   border-radius: 6px;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 14px;
   font-weight: 500;
   cursor: default;

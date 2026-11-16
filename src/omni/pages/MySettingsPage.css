@@ -59,8 +59,8 @@
 .subnav-item.active {
   background-color: var(--primaryBorderSubtle);
   color: var(--primaryTextDefault);
-  font-family: 'Hanken Grotesk', sans-serif;
-  font-weight: 500; /* Hanken Grotesk Medium */
+  font-family: var(--fontFamily);
+  font-weight: 500;
 }
 
 .subnav-item img {
@@ -97,7 +97,7 @@
   color: var(--slateTextBody);
   font-size: 14px;
   font-weight: 500;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
@@ -402,7 +402,7 @@
   font-weight: 500;
   cursor: pointer;
   font-size: 14px;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
 }
 
 .btn-save:hover {
@@ -502,7 +502,7 @@
   font-weight: 500;
   color: var(--slateTextSubtle);
   cursor: not-allowed;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
 }
 
 .appearance-pill-tab.active {
@@ -633,7 +633,7 @@
   background: transparent;
   border-radius: 6px;
   font-size: 12px;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   color: var(--slateTextBody);
   cursor: pointer;
   display: flex;

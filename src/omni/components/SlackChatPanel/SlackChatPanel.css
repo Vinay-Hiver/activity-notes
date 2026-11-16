@@ -9,7 +9,7 @@
   background: var(--slateSurfaceSubtle);
   border-left: 1px solid var(--slateBorderLight);
   border-right: 1px solid var(--slateBorderLight);
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
 }
 
 /* Top bar: contact name left, channel chip right */

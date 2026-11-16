@@ -44,7 +44,7 @@
 }
 
 .page-info {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 12px;
   color: #64758b;
 }
@@ -61,7 +61,7 @@
 }
 
 .subject-text-large {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 18px;
   font-weight: 500;
   color: #0f172a;
@@ -161,7 +161,7 @@
 }
 
 .convo-avatar span {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 15px;
   font-weight: 500;
   color: white;
@@ -176,7 +176,7 @@
 }
 
 .convo-email {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 14px;
   font-weight: 500;
   color: #334155;
@@ -187,7 +187,7 @@
 }
 
 .convo-to {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 13px;
   color: #64758b;
   display: flex;
@@ -196,7 +196,7 @@
 }
 
 .convo-time {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 13px;
   color: #64758b;
   white-space: nowrap;
@@ -204,7 +204,7 @@
 }
 
 .convo-body {
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 14px;
   line-height: 24px;
   color: #334155;
@@ -228,7 +228,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 13px;
   font-weight: 500;
   color: #334155;
@@ -257,7 +257,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: 'Hanken Grotesk', sans-serif;
+  font-family: var(--fontFamily);
   font-size: 14px;
   color: #334155;
 }
