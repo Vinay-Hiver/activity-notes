@@ -102,7 +102,7 @@ export function useNotesThread(convoId, { onReply, onEdit, scrollRef }) {
       note={pinnedNote}
       scrollRef={scrollRef}
       onGoTo={() => scrollToNote(pinnedNote.id)}
-      onReply={() => onReply(pinnedNote)}
+      onUnpin={() => { keepScrollPosition(scrollRef?.current); togglePin(pinnedNote.id); }}
     />
   );
 

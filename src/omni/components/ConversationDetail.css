@@ -71,8 +71,42 @@
 .subject-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 4px;
 }
+
+/* Header and subject icon buttons (Figma: 28px button, 16px icon area, glyph at its own size). */
+.header-icons { display: flex; align-items: center; gap: 12px; }
+.detail-icon-btn { width: 28px; height: 28px; padding: 0; }
+.detail-icon-btn img { display: block; flex: none; }
+.detail-divider { flex: none; width: 1px; height: 16px; background: var(--slateBorderLight); }
+.detail-divider--subject { height: 18px; margin: 0 4px; }
+.header-left { gap: 16px; }
+
+/* "Sync conversation" pill */
+.sync-convo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 4px 8px 4px 4px;
+  border: 0;
+  border-radius: 30px;
+  background: var(--slateSurfaceSubtle100Hover);
+  font: var(--fontWeightMedium) 14px/20px var(--fontFamily);
+  color: var(--slateTextBody);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.sync-convo-btn__plus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--indigoBorderDark);
+}
+.sync-convo-btn__plus img { display: block; }
 
 .messages-container {
   background-color: #f8fafc;

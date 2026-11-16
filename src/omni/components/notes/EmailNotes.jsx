@@ -394,7 +394,7 @@ export function keepScrollPosition(el) {
   requestAnimationFrame(() => { el.scrollTop = top + el.scrollHeight - height; });
 }
 
-export function StickyPinnedNote({ note, scrollRef, onGoTo, onReply }) {
+export function StickyPinnedNote({ note, scrollRef, onGoTo, onUnpin }) {
   const { user } = useCurrentUser();
   const [shown, setShown] = React.useState(false);
   const [open, setOpen] = React.useState(false);
@@ -437,9 +437,10 @@ export function StickyPinnedNote({ note, scrollRef, onGoTo, onReply }) {
             {!open && <span className="en-sticky-pin__preview">: {note.body || 'Attachments'}</span>}
           </span>
           <span className="en-sticky-pin__time">{note.time}</span>
-          <Icon name={open ? 'chevrontop' : 'chevrondown'} size={14} />
+          <span className="en-sticky-pin__chevron"><Icon name="chevrondown" size={14} /></span>
         </button>
-        {open && (
+        {/* Always rendered, so opening and closing can ease the height instead of jumping. */}
+        <div className="en-sticky-pin__expand" inert={!open}>
           <div className="en-sticky-pin__body">
             {note.body && <p className="en-sticky-pin__text"><MentionText text={note.body} /></p>}
             {note.attachments?.length > 0 && (
@@ -447,10 +448,10 @@ export function StickyPinnedNote({ note, scrollRef, onGoTo, onReply }) {
             )}
             <div className="en-sticky-pin__actions">
               <button type="button" className="en-sticky-pin__link" onClick={act(onGoTo)}><Icon name="newtab" size={14} />Go to note</button>
-              <button type="button" className="en-sticky-pin__link" onClick={act(onReply)}><Icon name="reply" size={14} />Reply to note</button>
+              <button type="button" className="en-sticky-pin__link" onClick={act(onUnpin)}><Icon name="unpin" size={14} />Unpin note</button>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

@@ -12,13 +12,12 @@ import { useConversationFields } from '../ConversationFields';
 import { ActivityGroup, NoteCard, NoteComposer, NoteConfirm, PinnedNote, StickyPinnedNote, NotesOnlyBar, formatNoteTime, keepScrollPosition, timeStamp } from './notes/EmailNotes';
 
 // Icons
-import titleUnread from '../assets/icons/title-unreaed.svg';
-import titleMailbox from '../assets/icons/title-mailbox.svg';
-import titlePrint from '../assets/icons/title-print.svg';
-import titleAi from '../assets/icons/title-ai.svg';
-import replyIcon from '../assets/icons/reply.svg';
+import headerAssignIcon from '../assets/icons/header-assign.svg';
+import headerShareIcon from '../assets/icons/header-share.svg';
+import syncPlusIcon from '../assets/icons/sync-plus.svg';
+import subjectSplitIcon from '../assets/icons/subject-split.svg';
+import subjectForwardIcon from '../assets/icons/subject-forward.svg';
 import replyAllIcon from '../assets/icons/reply-all.svg';
-import forwardIcon from '../assets/icons/forward.svg';
 import kebabIcon from '../assets/icons/kebab-menu.svg';
 import smallReplyIcon from '../assets/icons/small-reply.svg';
 import smallForwardIcon from '../assets/icons/small-forward.svg';
@@ -238,17 +237,18 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
       {/* Upper Bar */}
       <div className="detail-header">
         <div className="header-left">
-          <button className="icon-btn">
-             <img src={titleUnread} alt="Unread" width="16" height="16" />
-          </button>
-          <button className="icon-btn">
-             <img src={titleMailbox} alt="Mailbox" width="16" height="16" />
-          </button>
-          <button className="icon-btn">
-             <img src={titlePrint} alt="Print" width="16" height="16" />
-          </button>
-          <button className="icon-btn">
-             <img src={titleAi} alt="AI" width="16" height="16" />
+          <div className="header-icons">
+            <button type="button" className="icon-btn detail-icon-btn" aria-label="Assign">
+              <img src={headerAssignIcon} alt="" />
+            </button>
+            <button type="button" className="icon-btn detail-icon-btn" aria-label="Share">
+              <img src={headerShareIcon} alt="" />
+            </button>
+          </div>
+          <span className="detail-divider" />
+          <button type="button" className="sync-convo-btn">
+            <span className="sync-convo-btn__plus"><img src={syncPlusIcon} alt="" /></span>
+            Sync conversation
           </button>
         </div>
       </div>
@@ -257,14 +257,12 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
       <div className="subject-bar-detail">
         <h1 className="subject-text-large">{conversation.subject}</h1>
         <div className="subject-actions">
-           <button className="icon-btn" onClick={(e) => handleReplyAll(e, expandedIds[0] || (conversation.messages.length > 0 ? conversation.messages[0].id : null))}>
-             <img src={replyIcon} alt="Reply" width="16" height="16" />
+           <button type="button" className="icon-btn detail-icon-btn" aria-label="Split conversation">
+             <img src={subjectSplitIcon} alt="" />
            </button>
-           <button className="icon-btn" onClick={(e) => handleReplyAll(e, expandedIds[0])}>
-             <img src={replyAllIcon} alt="Reply All" width="16" height="16" />
-           </button>
-           <button className="icon-btn">
-             <img src={forwardIcon} alt="Forward" width="16" height="16" />
+           <span className="detail-divider detail-divider--subject" />
+           <button type="button" className="icon-btn detail-icon-btn" aria-label="Forward">
+             <img src={subjectForwardIcon} alt="" />
            </button>
            <ConversationMenu
              options={EMAIL_MENU}
@@ -282,7 +280,7 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
         note={pinned}
         scrollRef={scrollRef}
         onGoTo={() => scrollToNote(pinned.id)}
-        onReply={() => openComposer({ mode: 'reply', noteId: pinned.id })}
+        onUnpin={() => { keepScrollPosition(scrollRef.current); togglePin(pinned.id); }}
       />
       {/* Scrollable Area */}
       <div className="detail-scroll-area" ref={scrollRef}>
