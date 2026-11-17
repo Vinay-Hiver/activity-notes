@@ -6,8 +6,9 @@ import emojiIcon from '../../icons/emoji.svg';
 import attachFileIcon from '../../icons/attach-file.svg';
 // The Note icon from Figma (Activity - Notes › 12:24260), used as it is.
 import noteIcon from '../../assets/icons/note.svg';
-import ConversationMenu, { VIEW_ONLY_NOTES } from '../ConversationMenu';
-import { ActivityGroup, AttachmentChip, NoteComposer, NotesOnlyBar } from '../notes/EmailNotes';
+import ConversationMenu from '../ConversationMenu';
+import { ThreadViewBar, useThreadView } from '../../ThreadView';
+import { ActivityGroup, AttachmentChip, NoteComposer } from '../notes/EmailNotes';
 import { useNotesThread } from '../notes/useNotesThread';
 import { groupActivity, seedActivity } from '../notes/threadTimeline';
 import { useConversationFields } from '../../ConversationFields';
@@ -104,8 +105,8 @@ export default function SlackChatPanel({ inboxName, conversation }) {
   // The note composer (email's), shown in place of the reply box: null, { mode: 'new' }, or
   // { mode: 'reply' | 'edit', note } after Reply or Edit on a note.
   const [noteComposer, setNoteComposer] = useState(null);
-  // "View only notes" in the ⋮ menu: the thread shows its notes alone, without messages or activity.
-  const [onlyNotes, setOnlyNotes] = useState(false);
+  // "Hide notes" / "Hide activity" in the ⋮ menu (shared by every conversation in this tab).
+  const view = useThreadView();
   // Messages sent here carry the name of whoever is viewing (Michael or Jim); your own say "(You)".
   const { user } = useCurrentUser();
   const agentFor = (name) => {
@@ -191,10 +192,10 @@ export default function SlackChatPanel({ inboxName, conversation }) {
   ].sort((a, b) => a.at - b.at);
   const asActivity = (rows) => rows.map((row) => ({ kind: 'activity', row }));
   // What follows message `i`: activity between two messages or notes is one group, as in email.
-  const threadAfter = (i) => groupActivity([
+  const threadAfter = (i) => groupActivity(view.visible([
     ...(i === 0 ? asActivity(seed.first) : []),
     ...(i === base.length - 1 ? [...asActivity(seed.last), ...later] : []),
-  ]);
+  ]));
 
   function renderMessage(m) {
     const isAgent = m.kind === 'agent-text';
@@ -229,24 +230,21 @@ export default function SlackChatPanel({ inboxName, conversation }) {
         <span className="slack-topbar__name">{conversation?.name}</span>
         <span className="slack-topbar__end">
           <span className="slack-topbar__chip">#{conversation?.channel}</span>
-          <ConversationMenu options={[VIEW_ONLY_NOTES]} onlyNotes={onlyNotes} onSelect={() => setOnlyNotes((on) => !on)} />
+          <ConversationMenu />
         </span>
       </div>
 
       {notes.sticky}
       <div className="slack-thread" ref={threadRef}>
-        {onlyNotes && <NotesOnlyBar count={notes.notes.length} onExit={() => setOnlyNotes(false)} />}
-        {notes.pinned && <div className="slack-note slack-note--pinned">{notes.pinned}</div>}
-        {onlyNotes && (notes.notes.length
-          ? notes.notes.map((note) => <div key={note.id} className="slack-note slack-note--note">{notes.renderNote(note)}</div>)
-          : <p className="en-notes-empty">No notes in this conversation yet.</p>)}
-        {!onlyNotes && base.map((m, i) => (
+        <ThreadViewBar />
+        {notes.pinned && !view.hideNotes && <div className="slack-note slack-note--pinned">{notes.pinned}</div>}
+        {base.map((m, i) => (
           <React.Fragment key={m.id}>
             {renderMessage(m)}
             {threadAfter(i).map(renderThreadItem)}
           </React.Fragment>
         ))}
-        {!onlyNotes && base.length === 0 && groupActivity(later).map(renderThreadItem)}
+        {base.length === 0 && groupActivity(view.visible(later)).map(renderThreadItem)}
       </div>
 
       <div className="slack-composer-wrap">
@@ -262,8 +260,7 @@ export default function SlackChatPanel({ inboxName, conversation }) {
           />
         ) : (
           <>
-            {/* Viewing only notes hides the reply box; Add note stays. */}
-            {!onlyNotes && <div className="slack-composer">
+            <div className="slack-composer">
               <textarea
                 className="slack-composer__input"
                 placeholder="Shift + Enter for new line. Type ‘/’ to search for Slack templates and send quick replies"
@@ -278,7 +275,7 @@ export default function SlackChatPanel({ inboxName, conversation }) {
                 </div>
                 <button type="button" className="slack-composer__send" disabled={!text.trim()} onClick={send}>Send</button>
               </div>
-            </div>}
+            </div>
             {/* Email's Add note button, 12px under the reply box */}
             <div className="add-note-row">
               <button type="button" className="en-footer__btn" onClick={() => setNoteComposer({ mode: 'new' })}><img src={noteIcon} alt="" />Add note</button>

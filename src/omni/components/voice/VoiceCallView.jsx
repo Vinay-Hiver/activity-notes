@@ -4,9 +4,10 @@ import SkeletonText from './SkeletonText';
 import VoicePlayer from './VoicePlayer';
 import ConversationRightPanel from '../ConversationRightPanel';
 import { SAMPLE_TRANSCRIPT, VOICE_CALLS, callerLabel } from '../../data/voiceCalls';
-import { ActivityGroup, NoteComposer, NotesOnlyBar } from '../notes/EmailNotes';
+import { ActivityGroup, NoteComposer } from '../notes/EmailNotes';
 import { useNotesThread } from '../notes/useNotesThread';
-import ConversationMenu, { VIEW_ONLY_NOTES } from '../ConversationMenu';
+import ConversationMenu from '../ConversationMenu';
+import { ThreadViewBar, useThreadView } from '../../ThreadView';
 // The Note icon from Figma (Activity - Notes › 12:24260), used as it is.
 import noteIcon from '../../assets/icons/note.svg';
 import { groupActivity, seedActivity } from '../notes/threadTimeline';
@@ -113,14 +114,15 @@ export default function VoiceCallView({ inboxName, viewType = 'Mine' }) {
  */
 function CallTimeline({ call, notes, scrollRef }) {
   const { activityOf } = useConversationFields();
+  const view = useThreadView();
   const later = [
     ...notes.notes.map((note) => ({ kind: 'note', at: note.at ?? 0, note })),
     ...activityOf(call.id).map((row) => ({ kind: 'activity', at: row.at, row })),
   ].sort((a, b) => a.at - b.at);
-  const items = groupActivity([
+  const items = groupActivity(view.visible([
     ...seedActivity({ id: call.id, firstTime: call.time }).first.map((row) => ({ kind: 'activity', row })),
     ...later,
-  ]);
+  ]));
   return (
     <div className="call-activity" ref={scrollRef}>
       {items.map((item) => (item.kind === 'note'
@@ -137,8 +139,8 @@ export function CallDetail({ call, isEnded, isTranscriptReady, onEndCall }) {
   // Notes on the call (email-style cards and composer, shared by Michael and Jim).
   // `composer` is null (the Add note strip shows), { mode: 'new' }, or { mode: 'reply' | 'edit', note }.
   const [composer, setComposer] = React.useState(null);
-  // "View only notes" in the ⋮ menu: the call card and activity hide, and only the notes show.
-  const [onlyNotes, setOnlyNotes] = React.useState(false);
+  // "Hide notes" / "Hide activity" in the ⋮ menu (shared by every conversation in this tab).
+  const view = useThreadView();
   const timelineRef = React.useRef(null);
   const notes = useNotesThread(call.id, {
     scrollRef: timelineRef,
@@ -174,22 +176,14 @@ export function CallDetail({ call, isEnded, isTranscriptReady, onEndCall }) {
               <span>Ongoing</span>
             </div>
           )}
-          <ConversationMenu options={[VIEW_ONLY_NOTES]} onlyNotes={onlyNotes} onSelect={() => setOnlyNotes((on) => !on)} />
+          <ConversationMenu />
         </div>
       </div>
 
       <div className="detail-content-area">
         {/* A pinned note sits above the call card (the conversation's first card), as in the other channels. */}
-        {onlyNotes && <NotesOnlyBar count={notes.notes.length} onExit={() => setOnlyNotes(false)} />}
-        {notes.pinned && <div className="call-pinned">{notes.pinned}</div>}
-        {onlyNotes ? (
-          <div className="call-activity call-notes-only" ref={timelineRef}>
-            {notes.notes.length
-              ? notes.notes.map((note) => <div key={note.id} className="call-timeline__note">{notes.renderNote(note)}</div>)
-              : <p className="en-notes-empty">No notes in this conversation yet.</p>}
-          </div>
-        ) : (
-          <>
+        <ThreadViewBar />
+        {notes.pinned && !view.hideNotes && <div className="call-pinned">{notes.pinned}</div>}
         <div className={`call-card-large ${isTranscriptOpen ? 'transcript-open' : ''}`}>
           <div className="card-header-info">
             <div className="header-contact">
@@ -319,8 +313,6 @@ export function CallDetail({ call, isEnded, isTranscriptReady, onEndCall }) {
           )}
         </div>
         <CallTimeline call={call} notes={notes} scrollRef={timelineRef} />
-          </>
-        )}
       </div>
 
       {/* The email thread's bottom strip, with Add note only (a call has no Reply). */}

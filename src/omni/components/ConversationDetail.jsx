@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './ConversationDetail.css';
 import ReplySection from './ReplySection';
-import ConversationMenu, { VIEW_ONLY_NOTES } from './ConversationMenu';
+import ConversationMenu from './ConversationMenu';
+import { ThreadViewBar, useThreadView } from '../ThreadView';
 // The Note icon from Figma (Activity - Notes › 12:24260), used as it is.
 import noteIcon from '../assets/icons/note.svg';
 import { Icon } from '../../icons/Icon';
@@ -9,7 +10,7 @@ import { useCurrentUser } from '../CurrentUser';
 import { useEmailNotes } from '../EmailNotesStore';
 import { groupActivity, seedActivity } from './notes/threadTimeline';
 import { useConversationFields } from '../ConversationFields';
-import { ActivityGroup, NoteCard, NoteComposer, NoteConfirm, PinnedNote, StickyPinnedNote, NotesOnlyBar, formatNoteTime, keepScrollPosition, timeStamp } from './notes/EmailNotes';
+import { ActivityGroup, NoteCard, NoteComposer, NoteConfirm, PinnedNote, StickyPinnedNote, formatNoteTime, keepScrollPosition, timeStamp } from './notes/EmailNotes';
 
 // Icons
 import headerAssignIcon from '../assets/icons/header-assign.svg';
@@ -36,7 +37,7 @@ const seedNotes = (conversation) => [{
   body: "Checked their account: this looks related to last week's billing change. @Jim Halpert can you confirm before we reply?",
 }, ...(conversation.notes ?? [])];
 
-// The ⋮ menu at the top right of an email (only "Reply", "Reply all" and "View only notes" do something here).
+// The ⋮ menu at the top right of an email (only "Reply", "Reply all", "Hide notes" and "Hide activity" do something here).
 const EMAIL_MENU = [
   { value: 'reply', label: 'Reply', icon: 'reply' },
   { value: 'reply-all', label: 'Reply all', icon: 'replyall' },
@@ -44,7 +45,6 @@ const EMAIL_MENU = [
   { value: 'print', label: 'Print', icon: 'print' },
   { value: 'download', label: 'Download Message', icon: 'download' },
   { value: 'unread', label: 'Mark as unread', icon: 'markasunread' },
-  VIEW_ONLY_NOTES,
   { value: 'delete', label: 'Delete conversation', icon: 'delete' },
 ];
 
@@ -65,12 +65,11 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
   const scrollRef = React.useRef(null);
   const highlightTimer = React.useRef(0);
 
-  // "View only notes" in the ⋮ menu: the thread shows its notes alone, without messages or activity.
-  const [onlyNotes, setOnlyNotes] = useState(false);
+  // "Hide notes" / "Hide activity" in the ⋮ menu (shared by every conversation in this tab).
+  const view = useThreadView();
 
   useEffect(() => {
     if (conversation && conversation.messages.length > 0) {
-      setOnlyNotes(false);
       setExpandedIds([conversation.messages[0].id]);
       setActiveReplyId(null);
       setComposer(null);
@@ -228,9 +227,9 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
       ...thread.notes.filter((n) => seedIds.has(n.id) && (seedAfter.get(n.id) ?? conversation.messages[0].id) === msgId).map((note) => ({ kind: 'note', note, at: timeStamp(note.time) })),
     ].sort((a, b) => a.at - b.at));
     if (index === lastIndex) items.push(...asActivity(activity.last), ...later);
-    return groupActivity(items);
+    return groupActivity(view.visible(items));
   };
-  const pinned = thread.pin ? findNote(thread.pin.id) : null;
+  const pinned = thread.pin && !view.hideNotes ? findNote(thread.pin.id) : null;
 
   return (
     <div className="conversation-detail">
@@ -266,11 +265,9 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
            </button>
            <ConversationMenu
              options={EMAIL_MENU}
-             onlyNotes={onlyNotes}
              onSelect={(value) => {
                const last = conversation.messages[conversation.messages.length - 1]?.id;
-               if (value === VIEW_ONLY_NOTES.value) setOnlyNotes((on) => !on);
-               else if (value === 'reply' || value === 'reply-all') setActiveReplyId(last);
+               if (value === 'reply' || value === 'reply-all') setActiveReplyId(last);
              }}
            />
         </div>
@@ -286,12 +283,9 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
       <div className="detail-scroll-area" ref={scrollRef}>
         {/* Messages Container */}
         <div className="messages-container">
-          {onlyNotes && <NotesOnlyBar count={thread.notes.length} onExit={() => setOnlyNotes(false)} />}
+          <ThreadViewBar />
           {pinned && <PinnedNote by={thread.pin.by}>{renderNote(pinned, 'pin')}</PinnedNote>}
-          {onlyNotes && (thread.notes.length
-            ? thread.notes.map((n) => renderNote(n))
-            : <p className="en-notes-empty">No notes in this conversation yet.</p>)}
-          {!onlyNotes && conversation.messages.map((msg, index) => {
+          {conversation.messages.map((msg, index) => {
             const isExpanded = expandedIds.includes(msg.id);
             const isReplying = activeReplyId === msg.id;
    
@@ -383,8 +377,7 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
         />
       ) : (
         <div className="en-footer">
-          {/* Viewing only notes leaves Add note alone: there is nothing to reply to. */}
-          {!onlyNotes && <button type="button" className="en-footer__btn" onClick={(e) => handleReplyAll(e, conversation.messages[lastIndex]?.id)}><Icon name="reply" size={16} />Reply</button>}
+          <button type="button" className="en-footer__btn" onClick={(e) => handleReplyAll(e, conversation.messages[lastIndex]?.id)}><Icon name="reply" size={16} />Reply</button>
           <button type="button" className="en-footer__btn" onClick={() => openComposer({ mode: 'new' })}><img src={noteIcon} alt="" />Add note</button>
         </div>
       )}

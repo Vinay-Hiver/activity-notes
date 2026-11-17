@@ -1,0 +1,7 @@
+/* "Notes are hidden" bar at the top of a thread while Hide notes or Hide activity is on. */
+.thread-view-bar { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border: 1px solid var(--slateBorderLight); border-radius: 8px; background: var(--slateSurfaceWhite); font: var(--text-body-md-regular); color: var(--slateTextBody); }
+.thread-view-bar__show { padding: 0; border: 0; background: none; cursor: pointer; font: inherit; color: var(--primaryBorderDefault); white-space: nowrap; }
+.thread-view-bar__show:hover { text-decoration: underline; }
+.slack-thread > .thread-view-bar { margin: 0 20px 6px; }
+.chat-panel__thread > .thread-view-bar { margin-bottom: 4px; }
+.detail-content-area > .thread-view-bar { margin-bottom: 8px; }

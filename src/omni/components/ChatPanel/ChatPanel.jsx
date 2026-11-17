@@ -18,8 +18,9 @@ import noteIcon from '../../assets/icons/note.svg';
 import TemplateModal from '../TemplateModal/TemplateModal';
 import TemplatePickerPopover from '../TemplateModal/TemplatePickerPopover';
 import TemplatePreviewCard from '../TemplateModal/TemplatePreview';
-import ConversationMenu, { VIEW_ONLY_NOTES } from '../ConversationMenu';
-import { ActivityGroup, AttachmentChip, NoteComposer, NotesOnlyBar } from '../notes/EmailNotes';
+import ConversationMenu from '../ConversationMenu';
+import { ThreadViewBar, useThreadView } from '../../ThreadView';
+import { ActivityGroup, AttachmentChip, NoteComposer } from '../notes/EmailNotes';
 import { useNotesThread } from '../notes/useNotesThread';
 import { groupActivity, seedActivity } from '../notes/threadTimeline';
 import { useConversationFields } from '../../ConversationFields';
@@ -153,8 +154,8 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
   // The note composer (email's), shown in place of the reply box: null, { mode: 'new' }, or
   // { mode: 'reply' | 'edit', note } after Reply or Edit on a note.
   const [noteComposer, setNoteComposer] = useState(null);
-  // "View only notes" in the ⋮ menu: the thread shows its notes alone, without messages or activity.
-  const [onlyNotes, setOnlyNotes] = useState(false);
+  // "Hide notes" / "Hide activity" in the ⋮ menu (shared by every conversation in this tab).
+  const view = useThreadView();
   const baseMessages = conversation?.messages || [];
   const [isBlocked, setIsBlocked] = useState(isWhatsApp && !!conversation?.blocked);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
@@ -328,10 +329,10 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
   ].sort((a, b) => a.at - b.at);
   const asActivity = (rows) => rows.map((row) => ({ kind: 'activity', row }));
   // What follows message `i`: activity between two messages or notes is one group, as in email.
-  const threadAfter = (i) => groupActivity([
+  const threadAfter = (i) => groupActivity(view.visible([
     ...(i === 0 ? asActivity(seed.first) : []),
     ...(i === baseMessages.length - 1 ? [...asActivity(seed.last), ...later] : []),
-  ]);
+  ]));
 
   function renderMessage(entry) {
     if (entry.kind === 'template') {
@@ -376,17 +377,14 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
           {(conversation?.avatarInitial || conversation?.title || '?').charAt(0).toUpperCase()}
         </span>
         <span className="chat-panel__topbar-title">{conversation?.title}</span>
-        <ConversationMenu className="chat-panel__menu" options={[VIEW_ONLY_NOTES]} onlyNotes={onlyNotes} onSelect={() => setOnlyNotes((on) => !on)} />
+        <ConversationMenu className="chat-panel__menu" />
       </div>
 
       {notes.sticky}
       <div className="chat-panel__thread" ref={threadRef}>
-        {onlyNotes && <NotesOnlyBar count={notes.notes.length} onExit={() => setOnlyNotes(false)} />}
-        {notes.pinned}
-        {onlyNotes && (notes.notes.length
-          ? notes.notes.map((note) => <div key={note.id} className="chat-thread-item chat-thread-item--note">{notes.renderNote(note)}</div>)
-          : <p className="en-notes-empty">No notes in this conversation yet.</p>)}
-        {!onlyNotes && baseMessages.map((m, i) => (
+        <ThreadViewBar />
+        {!view.hideNotes && notes.pinned}
+        {baseMessages.map((m, i) => (
           <React.Fragment key={`base-${i}`}>
             {m.kind === 'incoming' ? (
               <IncomingBubble text={m.text} time={m.time} />
@@ -402,7 +400,7 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
             {threadAfter(i).map(renderThreadItem)}
           </React.Fragment>
         ))}
-        {!onlyNotes && baseMessages.length === 0 && groupActivity(later).map(renderThreadItem)}
+        {baseMessages.length === 0 && groupActivity(view.visible(later)).map(renderThreadItem)}
       </div>
 
       {conversation?.view !== 'Assigned to Bot' && (
@@ -419,8 +417,7 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
             />
           ) : (
             <>
-              {/* Viewing only notes hides the reply box; Add note stays. */}
-              {onlyNotes ? null : isBlocked ? (
+              {isBlocked ? (
                 <TwentyFourHourBlock onChooseTemplate={openTemplateModal} />
               ) : (
                 <div className="chat-composer">
