@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './ConversationDetail.css';
 import ReplySection from './ReplySection';
 import ConversationMenu from './ConversationMenu';
-import { ThreadViewBar, useThreadView } from '../ThreadView';
+import { useThreadView } from '../ThreadView';
 // The Note icon from Figma (Activity - Notes › 12:24260), used as it is.
 import noteIcon from '../assets/icons/note.svg';
 import { Icon } from '../../icons/Icon';
@@ -283,7 +283,6 @@ const ConversationDetail = ({ conversation, signatures, setSignatures, defaultSi
       <div className="detail-scroll-area" ref={scrollRef}>
         {/* Messages Container */}
         <div className="messages-container">
-          <ThreadViewBar />
           {pinned && <PinnedNote by={thread.pin.by}>{renderNote(pinned, 'pin')}</PinnedNote>}
           {conversation.messages.map((msg, index) => {
             const isExpanded = expandedIds.includes(msg.id);

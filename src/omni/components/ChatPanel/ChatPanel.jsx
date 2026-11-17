@@ -19,7 +19,7 @@ import TemplateModal from '../TemplateModal/TemplateModal';
 import TemplatePickerPopover from '../TemplateModal/TemplatePickerPopover';
 import TemplatePreviewCard from '../TemplateModal/TemplatePreview';
 import ConversationMenu from '../ConversationMenu';
-import { ThreadViewBar, useThreadView } from '../../ThreadView';
+import { useThreadView } from '../../ThreadView';
 import { ActivityGroup, AttachmentChip, NoteComposer } from '../notes/EmailNotes';
 import { useNotesThread } from '../notes/useNotesThread';
 import { groupActivity, seedActivity } from '../notes/threadTimeline';
@@ -382,7 +382,6 @@ export default function ChatPanel({ channel = 'whatsapp', conversation }) {
 
       {notes.sticky}
       <div className="chat-panel__thread" ref={threadRef}>
-        <ThreadViewBar />
         {!view.hideNotes && notes.pinned}
         {baseMessages.map((m, i) => (
           <React.Fragment key={`base-${i}`}>

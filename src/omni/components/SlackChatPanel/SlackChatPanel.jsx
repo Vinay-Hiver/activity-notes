@@ -7,7 +7,7 @@ import attachFileIcon from '../../icons/attach-file.svg';
 // The Note icon from Figma (Activity - Notes › 12:24260), used as it is.
 import noteIcon from '../../assets/icons/note.svg';
 import ConversationMenu from '../ConversationMenu';
-import { ThreadViewBar, useThreadView } from '../../ThreadView';
+import { useThreadView } from '../../ThreadView';
 import { ActivityGroup, AttachmentChip, NoteComposer } from '../notes/EmailNotes';
 import { useNotesThread } from '../notes/useNotesThread';
 import { groupActivity, seedActivity } from '../notes/threadTimeline';
@@ -236,7 +236,6 @@ export default function SlackChatPanel({ inboxName, conversation }) {
 
       {notes.sticky}
       <div className="slack-thread" ref={threadRef}>
-        <ThreadViewBar />
         {notes.pinned && !view.hideNotes && <div className="slack-note slack-note--pinned">{notes.pinned}</div>}
         {base.map((m, i) => (
           <React.Fragment key={m.id}>

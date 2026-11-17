@@ -1,5 +1,4 @@
 import React from 'react';
-import './ThreadView.css';
 import { ActivityPulse } from '../icons/ActivityPulse';
 
 /**
@@ -32,8 +31,6 @@ export function ThreadViewProvider({ children }) {
       if (v === HIDE_ACTIVITY.value) { setHideActivity((on) => !on); return true; }
       return false;
     },
-    /** Turns both off: the whole conversation shows again. */
-    showAll: () => { setHideNotes(false); setHideActivity(false); },
     /** Drops hidden notes and activity from a list of thread items ({ kind: 'message' | 'note' | 'activity' }). */
     visible: (items) => items.filter((i) => !(hideNotes && i.kind === 'note') && !(hideActivity && i.kind === 'activity')),
   }), [hideNotes, hideActivity]);
@@ -44,23 +41,4 @@ export function useThreadView() {
   const ctx = React.useContext(ThreadViewContext);
   if (!ctx) throw new Error('useThreadView must be used inside ThreadViewProvider');
   return ctx;
-}
-
-/**
- * The bar at the top of a thread while notes or activity are hidden, so an empty-looking thread explains
- * itself: what is hidden and the way back.
- */
-export function ThreadViewBar() {
-  const view = useThreadView();
-  if (!view.hideNotes && !view.hideActivity) return null;
-  const both = view.hideNotes && view.hideActivity;
-  const what = both ? 'Notes and activity are hidden' : view.hideNotes ? 'Notes are hidden' : 'Activity is hidden';
-  const action = both ? 'Show all' : view.hideNotes ? 'Show notes' : 'Show activity';
-  const onShow = both ? view.showAll : () => view.toggle(view.hideNotes ? HIDE_NOTES.value : HIDE_ACTIVITY.value);
-  return (
-    <div className="thread-view-bar" role="status">
-      <span>{what}</span>
-      <button type="button" className="thread-view-bar__show" onClick={onShow}>{action}</button>
-    </div>
-  );
 }

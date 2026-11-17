@@ -7,7 +7,7 @@ import { SAMPLE_TRANSCRIPT, VOICE_CALLS, callerLabel } from '../../data/voiceCal
 import { ActivityGroup, NoteComposer } from '../notes/EmailNotes';
 import { useNotesThread } from '../notes/useNotesThread';
 import ConversationMenu from '../ConversationMenu';
-import { ThreadViewBar, useThreadView } from '../../ThreadView';
+import { useThreadView } from '../../ThreadView';
 // The Note icon from Figma (Activity - Notes › 12:24260), used as it is.
 import noteIcon from '../../assets/icons/note.svg';
 import { groupActivity, seedActivity } from '../notes/threadTimeline';
@@ -182,7 +182,6 @@ export function CallDetail({ call, isEnded, isTranscriptReady, onEndCall }) {
 
       <div className="detail-content-area">
         {/* A pinned note sits above the call card (the conversation's first card), as in the other channels. */}
-        <ThreadViewBar />
         {notes.pinned && !view.hideNotes && <div className="call-pinned">{notes.pinned}</div>}
         <div className={`call-card-large ${isTranscriptOpen ? 'transcript-open' : ''}`}>
           <div className="card-header-info">
