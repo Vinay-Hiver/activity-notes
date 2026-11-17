@@ -288,11 +288,24 @@ export function NoteAttachments({ files }) {
 
 function NoteHeading({ note }) {
   const { user } = useCurrentUser();
+  // A reply to your own note: "You replied to yourself", or "Jim replied to their note" for everyone else.
+  const selfReply = note.replyTo && note.replyTo.authorId === note.authorId;
   return (
     <div className="en-note__heading">
       <span className="en-note__name">{personLabel({ id: note.authorId, name: note.author }, user.id, { start: true })}</span>
-      <span className="en-note__action">{note.replyTo ? 'replied to' : 'added a note'}</span>
-      {note.replyTo && <span className="en-note__name">{personLabel({ id: note.replyTo.authorId, name: note.replyTo.author }, user.id)}</span>}
+      {selfReply ? (
+        <>
+          <span className="en-note__action">replied to</span>
+          {note.authorId === user.id
+            ? <span className="en-note__name">yourself</span>
+            : <span className="en-note__action">their note</span>}
+        </>
+      ) : (
+        <>
+          <span className="en-note__action">{note.replyTo ? 'replied to' : 'added a note'}</span>
+          {note.replyTo && <span className="en-note__name">{personLabel({ id: note.replyTo.authorId, name: note.replyTo.author }, user.id)}</span>}
+        </>
+      )}
     </div>
   );
 }
