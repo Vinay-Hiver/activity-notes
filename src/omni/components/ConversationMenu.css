@@ -18,3 +18,5 @@
 .conversation-menu__btn.is-open { background: var(--slateSurfaceSubtle100Hover); }
 
 .hot-dropdown.conversation-menu { width: 240px; }
+/* Show every option: the list grows to fit instead of scrolling. */
+.hot-dropdown.conversation-menu .hot-dropdown__list { max-height: none; overflow-y: visible; }
