@@ -1,5 +1,6 @@
 import React from 'react';
 import './ThreadView.css';
+import { ActivityPulse } from '../icons/ActivityPulse';
 
 /**
  * "Hide notes" and "Hide activity" from the conversation ⋮ menu. Both start off; either or both can be on.
@@ -9,7 +10,12 @@ import './ThreadView.css';
 const ThreadViewContext = React.createContext(null);
 
 export const HIDE_NOTES = { value: 'hide-notes', label: 'Hide notes', icon: 'note' };
-export const HIDE_ACTIVITY = { value: 'hide-activity', label: 'Hide activity', icon: 'layering' };
+// Its icon is not in the HOT set, so the row passes it as `leading`, styled like the other 14px row icons.
+export const HIDE_ACTIVITY = {
+  value: 'hide-activity',
+  label: 'Hide activity',
+  leading: <span className="hot-list-el hot-list-icon"><ActivityPulse size={14} /></span>,
+};
 export const THREAD_VIEW_OPTIONS = [HIDE_NOTES, HIDE_ACTIVITY];
 
 export function ThreadViewProvider({ children }) {
