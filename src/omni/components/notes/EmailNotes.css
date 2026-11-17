@@ -105,7 +105,7 @@
 .en-sticky-pin__time { flex: none; white-space: nowrap; color: var(--slateTextSubtle); }
 .en-sticky-pin__body { display: flex; flex-direction: column; gap: 8px; padding-top: 4px; }
 .en-sticky-pin__text { margin: 0; padding-left: 22px; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--slateTextBody); }
-.en-sticky-pin__body .en-attach-list { padding-left: 22px; }
+.en-sticky-pin__body .en-attach-block { padding-left: 22px; }
 .en-sticky-pin__actions { display: flex; align-items: center; gap: 14px; padding: 8px 0 0 22px; border-top: 1px solid var(--enNoteBorder); }
 .en-sticky-pin__link { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; color: var(--primaryBorderDefault); }
 .en-sticky-pin__link:hover { text-decoration: underline; }
@@ -113,7 +113,7 @@
 
 /* ---------- Attachments ---------- */
 .en-attach-list { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; padding-top: 8px; }
-.en-attach { display: flex; align-items: center; gap: 4px; max-width: 240px; padding: 4px; border: 1px solid var(--slateBorderLight); border-radius: 8px; background: var(--slateSurfaceSubtle); }
+.en-attach { display: flex; align-items: center; gap: 4px; width: 220px; max-width: 100%; padding: 4px; border: 1px solid var(--slateBorderLight); border-radius: 8px; background: var(--slateSurfaceSubtle); }
 .en-note .en-attach { border-color: var(--enNoteChipBorder); background: var(--slateSurfaceWhite); }
 .en-attach__open { display: flex; flex: 1; align-items: center; gap: 8px; min-width: 0; padding: 2px 4px; border: 0; background: none; text-align: left; cursor: pointer; font-family: inherit; }
 .en-attach__thumb, .en-attach__icon { flex: none; width: 32px; height: 32px; border-radius: 6px; }
@@ -125,6 +125,15 @@
 .en-attach__remove { display: flex; flex: none; align-items: center; justify-content: center; width: 22px; height: 22px; padding: 0; border: 0; border-radius: 4px; background: none; cursor: pointer; color: var(--slateTextSubtle); }
 .en-attach__remove svg { width: 12px; height: 12px; }
 .en-attach__remove:hover { background: var(--slateSurfaceSubtle100Hover); }
+/* Download: hidden until the chip is hovered (or the link has focus); the chip tints on hover. */
+.en-attach__download { display: none; flex: none; align-items: center; justify-content: center; padding: 10px; color: var(--slateTextBody); border-radius: 6px; }
+.en-attach:hover .en-attach__download, .en-attach__download:focus-visible { display: flex; }
+.en-attach:has(.en-attach__download):hover, .en-note .en-attach:has(.en-attach__download):hover { background: var(--slateSurfaceSubtle); }
+.en-attach__download:hover { color: var(--slateTextTitle); }
+/* A note's files, with "Download all attachments" above them when there are several. */
+.en-attach-block { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
+.en-attach-all { margin-top: 4px; padding: 0; border: 0; background: none; cursor: pointer; font: var(--text-body-sm-medium); color: var(--primarySurfaceDefault); }
+.en-attach-all:hover { text-decoration: underline; }
 
 /* ---------- Footer (Reply / Add note) ---------- */
 .en-footer { display: flex; flex: none; gap: 12px; padding: 12px; border-top: 0.667px solid var(--slateBorderMild); background: var(--slateSurfaceWhite); }

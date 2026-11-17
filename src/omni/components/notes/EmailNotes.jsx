@@ -257,11 +257,31 @@ export function AttachmentChip({ file, onRemove }) {
           <span className="en-attach__size">{formatFileSize(file.size)}</span>
         </span>
       </button>
-      {onRemove && (
+      {onRemove ? (
         <button type="button" className="en-attach__remove" aria-label={`Remove ${file.name}`} onClick={onRemove}>
           <Icon name="close" size={14} />
         </button>
+      ) : (
+        // Sent files: a download icon shows on hover.
+        <a className="en-attach__download" href={file.url} download={file.name} aria-label={`Download ${file.name}`} title="Download">
+          <Icon name="download" size={16} />
+        </a>
       )}
+    </div>
+  );
+}
+
+/** A note's files. With more than one, a "Download all attachments" link above them saves a .zip. */
+export function NoteAttachments({ files }) {
+  if (!files?.length) return null;
+  return (
+    <div className="en-attach-block" onClick={stop}>
+      {files.length > 1 && (
+        <button type="button" className="en-attach-all" onClick={() => downloadAsZip(files, 'note-attachments.zip')}>
+          Download all attachments
+        </button>
+      )}
+      <div className="en-attach-list">{files.map((f) => <AttachmentChip key={f.id} file={f} />)}</div>
     </div>
   );
 }
@@ -284,15 +304,9 @@ const NoteAction = ({ label, children, ...props }) => (
   </Tooltip>
 );
 
-function NoteActions({ pinned, attachments, onPin, onReply, onEdit, onDelete }) {
+function NoteActions({ pinned, onPin, onReply, onEdit, onDelete }) {
   return (
     <div className="en-note__actions" onClick={stop} onKeyDown={stop}>
-      {/* With more than one file, the first action saves them all in one .zip. */}
-      {attachments?.length > 1 && (
-        <NoteAction label="Download all attachments" onClick={() => downloadAsZip(attachments, 'note-attachments.zip')}>
-          <Icon name="download" size={14} />
-        </NoteAction>
-      )}
       <NoteAction label={pinned ? 'Unpin' : 'Pin to top'} aria-pressed={pinned} className={pinned ? 'is-pinned' : ''} onClick={onPin}>
         <Icon name={pinned ? 'unpin' : 'pin'} size={14} />
       </NoteAction>
@@ -305,7 +319,7 @@ function NoteActions({ pinned, attachments, onPin, onReply, onEdit, onDelete }) 
 }
 
 export function NoteCard({ note, elementId, expanded, pinned, highlighted, onToggle, onPin, onReply, onQuoteClick, onEdit, onDelete }) {
-  const actions = <NoteActions pinned={pinned} attachments={note.attachments} onPin={onPin} onReply={onReply} onEdit={onEdit} onDelete={onDelete} />;
+  const actions = <NoteActions pinned={pinned} onPin={onPin} onReply={onReply} onEdit={onEdit} onDelete={onDelete} />;
   return (
     <article
       id={elementId}
@@ -330,9 +344,7 @@ export function NoteCard({ note, elementId, expanded, pinned, highlighted, onTog
               {note.edited && <span className="en-note__edited"> (edited)</span>}
             </p>
           )}
-          {note.attachments?.length > 0 && (
-            <div className="en-attach-list">{note.attachments.map((f) => <AttachmentChip key={f.id} file={f} />)}</div>
-          )}
+          <NoteAttachments files={note.attachments} />
         </>
       ) : (
         <>
@@ -443,9 +455,7 @@ export function StickyPinnedNote({ note, scrollRef, onGoTo, onUnpin }) {
         <div className="en-sticky-pin__expand" inert={!open}>
           <div className="en-sticky-pin__body">
             {note.body && <p className="en-sticky-pin__text"><MentionText text={note.body} /></p>}
-            {note.attachments?.length > 0 && (
-              <div className="en-attach-list">{note.attachments.map((f) => <AttachmentChip key={f.id} file={f} />)}</div>
-            )}
+            <NoteAttachments files={note.attachments} />
             <div className="en-sticky-pin__actions">
               <button type="button" className="en-sticky-pin__link" onClick={act(onGoTo)}><Icon name="newtab" size={14} />Go to note</button>
               <button type="button" className="en-sticky-pin__link" onClick={act(onUnpin)}><Icon name="unpin" size={14} />Unpin note</button>
